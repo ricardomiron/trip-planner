@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Asia Trip">
+<title>🌏 Asia Trip — Apr 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --seoul: #E8503A;
+    --osaka: #1A9E8F;
+    --tokyo: #7B5EA7;
+    --bg: #0F0E0C;
+    --surface: #1A1917;
+    --surface2: #242220;
+    --surface3: #2E2C2A;
+    --border: rgba(255,255,255,0.08);
+    --text: #F5F0E8;
+    --text2: #A09890;
+    --text3: #6A6460;
+    --gold: #C9A84C;
+    --green: #4CAF7D;
+    --r: 16px;
+    --r-sm: 10px;
+    --tab-h: 68px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    display: grid; grid-template-columns: repeat(4,1fr);
+    background: rgba(15,14,12,0.92);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    padding-bottom: var(--safe-bottom);
+    z-index: 100;
+  }
+  .tab {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 10px 0 8px; gap: 4px; cursor: pointer; transition: all .2s;
+    border: none; background: none; color: var(--text3); font-family: inherit;
+  }
+  .tab .icon { font-size: 22px; line-height: 1; transition: transform .2s; }
+  .tab .label { font-size: 10px; font-weight: 500; letter-spacing: .3px; text-transform: uppercase; }
+  .tab.active { color: var(--text); }
+  .tab.active .icon { transform: translateY(-2px); }
+  .tab[data-city="seoul"].active .label { color: var(--seoul); }
+  .tab[data-city="osaka"].active .label { color: var(--osaka); }
+  .tab[data-city="tokyo"].active .label { color: var(--tokyo); }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: 100vh; padding-bottom: calc(var(--tab-h) + var(--safe-bottom) + 16px); }
+  .screen.active { display: block; }
+
+  /* ── HEADER ── */
+  .app-header {
+    padding: 56px 20px 20px;
+    background: linear-gradient(180deg, var(--bg) 0%, transparent 100%);
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .app-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700;
+    line-height: 1.1;
+  }
+  .app-header .subtitle { font-size: 13px; color: var(--text2); margin-top: 4px; font-weight: 300; }
+
+  /* ── CITY PILL ── */
+  .city-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px 4px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase;
+  }
+  .city-pill.seoul { background: rgba(232,80,58,.15); color: var(--seoul); }
+  .city-pill.osaka { background: rgba(26,158,143,.15); color: var(--osaka); }
+  .city-pill.tokyo { background: rgba(123,94,167,.15); color: var(--tokyo); }
+  .city-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 16px; margin: 0 16px 12px;
+  }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .card-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .6px; }
+
+  /* ── OVERVIEW / HOME ── */
+  .hero {
+    margin: 0 16px 16px;
+    border-radius: var(--r);
+    padding: 24px 20px;
+    background: linear-gradient(135deg, #1a1410 0%, #0f1a17 50%, #130f1a 100%);
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '🌏';
+    position: absolute; right: -10px; bottom: -10px;
+    font-size: 90px; opacity: .08; line-height: 1;
+  }
+  .hero-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .hero-sub { font-size: 13px; color: var(--text2); font-weight: 300; }
+  .hero-cities { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+  .trip-bar {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 1px; margin: 0 16px 16px;
+    border-radius: var(--r); overflow: hidden; border: 1px solid var(--border);
+  }
+  .trip-seg {
+    padding: 14px 12px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .trip-seg.s { background: rgba(232,80,58,.12); }
+  .trip-seg.o { background: rgba(26,158,143,.12); }
+  .trip-seg.t { background: rgba(123,94,167,.12); }
+  .trip-seg .city-name { font-size: 13px; font-weight: 600; }
+  .trip-seg.s .city-name { color: var(--seoul); }
+  .trip-seg.o .city-name { color: var(--osaka); }
+  .trip-seg.t .city-name { color: var(--tokyo); }
+  .trip-seg .dates { font-size: 11px; color: var(--text3); font-weight: 300; }
+  .trip-seg .nights { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+  .quick-stats {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 8px; margin: 0 16px 16px;
+  }
+  .stat-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-sm); padding: 14px 12px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .4px; font-weight: 500; }
+
+  .booking-list { display: flex; flex-direction: column; gap: 8px; }
+  .booking-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface2); border-radius: var(--r-sm); padding: 12px;
+  }
+  .booking-icon { font-size: 20px; width: 36px; text-align: center; flex-shrink: 0; }
+  .booking-text { flex: 1; }
+  .booking-title { font-size: 13px; font-weight: 500; }
+  .booking-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .booking-badge {
+    font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: .3px; flex-shrink: 0;
+  }
+  .booking-badge.urgent { background: rgba(232,80,58,.2); color: var(--seoul); }
+  .booking-badge.ok { background: rgba(76,175,125,.2); color: var(--green); }
+
+  /* ── CALENDAR ── */
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7,1fr);
+    gap: 2px; margin: 0 16px 16px;
+  }
+  .cal-day-label {
+    text-align: center; font-size: 10px; font-weight: 600;
+    color: var(--text3); padding: 6px 0; text-transform: uppercase; letter-spacing: .3px;
+  }
+  .cal-day {
+    aspect-ratio: 1; border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .15s; position: relative;
+    font-size: 13px; font-weight: 400;
+  }
+  .cal-day.empty { cursor: default; }
+  .cal-day.seoul { background: rgba(232,80,58,.15); color: var(--seoul); font-weight: 600; }
+  .cal-day.osaka { background: rgba(26,158,143,.15); color: var(--osaka); font-weight: 600; }
+  .cal-day.tokyo { background: rgba(123,94,167,.15); color: var(--tokyo); font-weight: 600; }
+  .cal-day.other { color: var(--text3); }
+  .cal-day.today { outline: 2px solid var(--gold); outline-offset: -2px; }
+  .cal-day.selected { transform: scale(1.1); z-index: 2; }
+  .cal-day.selected.seoul { background: var(--seoul); color: white; }
+  .cal-day.selected.osaka { background: var(--osaka); color: white; }
+  .cal-day.selected.tokyo { background: var(--tokyo); color: white; }
+  .cal-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; position: absolute; bottom: 4px; opacity: .7; }
+
+  .day-detail {
+    margin: 0 16px 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); overflow: hidden;
+  }
+  .day-detail-header {
+    padding: 16px 16px 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .day-detail-date {
+    flex: 1;
+  }
+  .day-detail-date .day-num {
+    font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; line-height: 1;
+  }
+  .day-detail-date .day-full { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .day-detail-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .day-detail-theme { font-size: 12px; color: var(--text2); font-weight: 300; }
+
+  .timeline { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 0; }
+  .tl-item { display: flex; gap: 12px; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; width: 32px; flex-shrink: 0; }
+  .tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .tl-dot.morning { background: var(--gold); }
+  .tl-dot.afternoon { background: #5BA4E8; }
+  .tl-dot.evening { background: #9B59B6; }
+  .tl-dot.tip { background: var(--green); }
+  .tl-line { flex: 1; width: 1px; background: var(--border); margin: 4px 0; }
+  .tl-body { flex: 1; padding-bottom: 16px; }
+  .tl-time { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; }
+  .tl-place { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .tl-desc { font-size: 12px; color: var(--text2); line-height: 1.5; font-weight: 300; }
+  .tl-order { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; background: var(--surface2); border-radius: 6px; padding: 4px 8px; }
+  .tl-order-icon { font-size: 12px; }
+  .tl-order-text { font-size: 11px; color: var(--text2); }
+  .tl-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .tl-tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 20px;
+    border: 1px solid var(--border); color: var(--text3); font-weight: 500;
+  }
+  .tl-tag.book { border-color: var(--seoul); color: var(--seoul); background: rgba(232,80,58,.08); }
+  .tl-tag.eat { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,.08); }
+
+  /* ── CHECKLIST ── */
+  .checklist-section { margin: 0 16px 20px; }
+  .checklist-section-title {
+    font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase;
+    letter-spacing: .6px; margin-bottom: 8px; padding-left: 4px;
+  }
+  .check-items { display: flex; flex-direction: column; gap: 1px; }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--surface); padding: 14px 14px;
+    border-bottom: 1px solid var(--border); cursor: pointer;
+    transition: background .1s; user-select: none;
+  }
+  .check-item:first-child { border-radius: var(--r) var(--r) 0 0; }
+  .check-item:last-child { border-radius: 0 0 var(--r) var(--r); border-bottom: none; }
+  .check-item:only-child { border-radius: var(--r); border-bottom: none; }
+  .check-item:active { background: var(--surface2); }
+  .check-box {
+    width: 22px; height: 22px; border-radius: 6px;
+    border: 2px solid var(--border); flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s; font-size: 13px; color: transparent;
+  }
+  .check-item.done .check-box {
+    background: var(--green); border-color: var(--green); color: white;
+  }
+  .check-item.urgent .check-box { border-color: var(--seoul); }
+  .check-item.urgent:not(.done) .check-box-inner { background: rgba(232,80,58,.1); }
+  .check-content { flex: 1; }
+  .check-title {
+    font-size: 14px; font-weight: 500; line-height: 1.3;
+    transition: all .15s;
+  }
+  .check-item.done .check-title { color: var(--text3); text-decoration: line-through; }
+  .check-sub { font-size: 12px; color: var(--text3); margin-top: 3px; font-weight: 300; }
+  .check-badge-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .check-badge {
+    font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500;
+  }
+  .check-badge.seoul { background: rgba(232,80,58,.15); color: var(--seoul); }
+  .check-badge.osaka { background: rgba(26,158,143,.15); color: var(--osaka); }
+  .check-badge.tokyo { background: rgba(123,94,167,.15); color: var(--tokyo); }
+  .check-badge.all { background: rgba(255,255,255,.08); color: var(--text3); }
+  .check-badge.urgent { background: rgba(232,80,58,.15); color: var(--seoul); }
+
+  .progress-bar-wrap { margin: 0 16px 16px; }
+  .progress-label { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .progress-label span { font-size: 12px; color: var(--text3); }
+  .progress-label strong { font-size: 12px; color: var(--text); }
+  .progress-track { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width .4s ease; }
+
+  .filter-row { display: flex; gap: 8px; padding: 0 16px; margin-bottom: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    flex-shrink: 0; padding: 7px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text3); font-family: inherit;
+    white-space: nowrap;
+  }
+  .filter-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,.1); }
+  .filter-btn.seoul-f.active { border-color: var(--seoul); color: var(--seoul); background: rgba(232,80,58,.1); }
+  .filter-btn.osaka-f.active { border-color: var(--osaka); color: var(--osaka); background: rgba(26,158,143,.1); }
+  .filter-btn.tokyo-f.active { border-color: var(--tokyo); color: var(--tokyo); background: rgba(123,94,167,.1); }
+
+  /* ── MAP SCREEN ── */
+  .map-container {
+    margin: 0 16px 16px; border-radius: var(--r); overflow: hidden;
+    border: 1px solid var(--border); height: 340px; position: relative;
+  }
+  #map { width: 100%; height: 100%; }
+  .map-legend { display: flex; gap: 10px; padding: 0 16px; margin-bottom: 12px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text3); font-weight: 400; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  .place-list { display: flex; flex-direction: column; gap: 1px; margin: 0 16px; }
+  .place-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); padding: 12px 14px;
+    border-bottom: 1px solid var(--border); cursor: pointer; transition: background .1s;
+  }
+  .place-item:first-child { border-radius: var(--r) var(--r) 0 0; }
+  .place-item:last-child { border-radius: 0 0 var(--r) var(--r); border-bottom: none; }
+  .place-item:active { background: var(--surface2); }
+  .place-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .place-info { flex: 1; }
+  .place-name { font-size: 13px; font-weight: 500; }
+  .place-type { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .place-arrow { font-size: 14px; color: var(--text3); }
+
+  /* ── SECTION HEADING ── */
+  .section-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 700;
+    padding: 0 16px; margin-bottom: 12px;
+  }
+
+  /* ── SCROLL HINT ── */
+  .scroll-fade {
+    position: sticky; bottom: calc(var(--tab-h) + var(--safe-bottom));
+    height: 40px; background: linear-gradient(0deg, var(--bg), transparent);
+    pointer-events: none; margin-top: -40px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .screen.active > * { animation: fadeUp .3s ease both; }
+  .screen.active > *:nth-child(2) { animation-delay: .05s; }
+  .screen.active > *:nth-child(3) { animation-delay: .1s; }
+  .screen.active > *:nth-child(4) { animation-delay: .15s; }
+  .screen.active > *:nth-child(5) { animation-delay: .2s; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7);
+    z-index: 200; display: flex; align-items: flex-end;
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    width: 100%; max-width: 430px; margin: 0 auto;
+    background: var(--surface); border-radius: var(--r) var(--r) 0 0;
+    padding: 20px 20px calc(20px + var(--safe-bottom));
+    transform: translateY(100%); transition: transform .3s cubic-bezier(.32,.72,0,1);
+    max-height: 85vh; overflow-y: auto;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 4px; }
+  .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
+  .modal-close { position: absolute; top: 20px; right: 20px; background: var(--surface2); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 16px; color: var(--text2); font-family: inherit; display: flex; align-items: center; justify-content: center; }
+
+  /* ── MAPS TAB ── */
+  .map-tabs { display: flex; gap: 8px; padding: 0 16px; margin-bottom: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .map-tabs::-webkit-scrollbar { display: none; }
+  .map-tab-btn {
+    flex-shrink: 0; padding: 7px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text3); font-family: inherit; white-space: nowrap;
+  }
+  .map-tab-btn.active { color: white; border-color: transparent; }
+  .map-tab-btn.all.active { background: var(--gold); }
+  .map-tab-btn.s.active { background: var(--seoul); }
+  .map-tab-btn.o.active { background: var(--osaka); }
+  .map-tab-btn.t.active { background: var(--tokyo); }
+
+  .embed-map { margin: 0 16px 16px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--border); }
+  .embed-map iframe { display: block; width: 100%; height: 320px; border: none; }
+
+  .place-grid { margin: 0 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .place-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-sm); padding: 12px; cursor: pointer; transition: all .15s;
+    text-decoration: none; display: block;
+  }
+  .place-card:active { background: var(--surface2); transform: scale(0.98); }
+  .place-card-icon { font-size: 22px; margin-bottom: 6px; }
+  .place-card-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; line-height: 1.3; }
+  .place-card-type { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .3px; font-weight: 500; }
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 1: OVERVIEW
+════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-overview">
+  <div class="app-header">
+    <h1>Your Asia Trip</h1>
+    <div class="subtitle">April 17 – 26, 2026 · 10 days</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-title">Seoul → Osaka → Tokyo</div>
+    <div class="hero-sub">Solo trip · Mid-range · Food + Temples + Street culture</div>
+    <div class="hero-cities">
+      <span class="city-pill seoul"><span class="dot"></span>Seoul 3N</span>
+      <span class="city-pill osaka"><span class="dot"></span>Osaka 3N</span>
+      <span class="city-pill tokyo"><span class="dot"></span>Tokyo 3N</span>
+    </div>
+  </div>
+
+  <div class="trip-bar">
+    <div class="trip-seg s">
+      <div class="city-name">🇰🇷 Seoul</div>
+      <div class="dates">Apr 17–20</div>
+      <div class="nights">3 nights</div>
+    </div>
+    <div class="trip-seg o">
+      <div class="city-name">🇯🇵 Osaka</div>
+      <div class="dates">Apr 20–23</div>
+      <div class="nights">3 nights</div>
+    </div>
+    <div class="trip-seg t">
+      <div class="city-name">🇯🇵 Tokyo</div>
+      <div class="dates">Apr 23–26</div>
+      <div class="nights">3 nights</div>
+    </div>
+  </div>
+
+  <div class="quick-stats">
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--gold)">10</div>
+      <div class="stat-label">Days</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--green)">32</div>
+      <div class="stat-label">Places</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--seoul)">3</div>
+      <div class="stat-label">Book now</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">⚠️ Must book before leaving</div>
+    </div>
+    <div class="booking-list">
+      <div class="booking-item">
+        <div class="booking-icon">🏯</div>
+        <div class="booking-text">
+          <div class="booking-title">Changdeokgung Secret Garden</div>
+          <div class="booking-sub">Seoul · Capacity limited · Book 1–2 weeks ahead</div>
+        </div>
+        <div class="booking-badge urgent">Book</div>
+      </div>
+      <div class="booking-item">
+        <div class="booking-icon">🚂</div>
+        <div class="booking-text">
+          <div class="booking-title">Odakyu Romancecar</div>
+          <div class="booking-sub">Tokyo → Hakone · Reserved panoramic seat</div>
+        </div>
+        <div class="booking-badge urgent">Book</div>
+      </div>
+      <div class="booking-item">
+        <div class="booking-icon">🌆</div>
+        <div class="booking-text">
+          <div class="booking-title">Shibuya Sky</div>
+          <div class="booking-sub">Tokyo · Sunset slots sell out fast</div>
+        </div>
+        <div class="booking-badge urgent">Book</div>
+      </div>
+      <div class="booking-item">
+        <div class="booking-icon">🚄</div>
+        <div class="booking-text">
+          <div class="booking-title">Shinkansen Nozomi</div>
+          <div class="booking-sub">Osaka → Tokyo · Apr 23 · ~¥14,000</div>
+        </div>
+        <div class="booking-badge urgent">Book</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">✈️ Flights (booked)</div>
+    </div>
+    <div class="booking-list">
+      <div class="booking-item">
+        <div class="booking-icon">✈️</div>
+        <div class="booking-text">
+          <div class="booking-title">KE 725 — Seoul → Osaka</div>
+          <div class="booking-sub">Apr 20 · ICN 09:10 → KIX 11:25</div>
+        </div>
+        <div class="booking-badge ok">Done</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 2: CALENDAR
+════════════════════════════════════════════════ -->
+<div class="screen" id="screen-calendar">
+  <div class="app-header">
+    <h1>April 2026</h1>
+    <div class="subtitle">Tap a day to see the plan</div>
+  </div>
+
+  <div class="card-title" style="padding: 0 20px 10px; font-size:11px; color:var(--text3); letter-spacing:.6px;">APRIL 2026</div>
+
+  <div class="cal-grid">
+    <div class="cal-day-label">Sun</div>
+    <div class="cal-day-label">Mon</div>
+    <div class="cal-day-label">Tue</div>
+    <div class="cal-day-label">Wed</div>
+    <div class="cal-day-label">Thu</div>
+    <div class="cal-day-label">Fri</div>
+    <div class="cal-day-label">Sat</div>
+    <!-- Row 1: Apr 1–5 (start on Tuesday) -->
+    <div class="cal-day empty"></div>
+    <div class="cal-day empty"></div>
+    <div class="cal-day other" data-date="1">1</div>
+    <div class="cal-day other" data-date="2">2</div>
+    <div class="cal-day other" data-date="3">3</div>
+    <div class="cal-day other" data-date="4">4</div>
+    <div class="cal-day other" data-date="5">5</div>
+    <!-- Row 2 -->
+    <div class="cal-day other" data-date="6">6</div>
+    <div class="cal-day other" data-date="7">7</div>
+    <div class="cal-day other" data-date="8">8</div>
+    <div class="cal-day other" data-date="9">9</div>
+    <div class="cal-day other" data-date="10">10</div>
+    <div class="cal-day other" data-date="11">11</div>
+    <div class="cal-day other" data-date="12">12</div>
+    <!-- Row 3 -->
+    <div class="cal-day other" data-date="13">13</div>
+    <div class="cal-day other" data-date="14">14</div>
+    <div class="cal-day other" data-date="15">15</div>
+    <div class="cal-day other" data-date="16">16</div>
+    <div class="cal-day seoul" data-date="17">17<div class="cal-dot"></div></div>
+    <div class="cal-day other" data-date="18">18</div>
+    <div class="cal-day other" data-date="19">19</div>
+    <!-- Row 4 -->
+    <div class="cal-day seoul" data-date="20">20<div class="cal-dot"></div></div>
+    <div class="cal-day osaka" data-date="21">21<div class="cal-dot"></div></div>
+    <div class="cal-day osaka" data-date="22">22<div class="cal-dot"></div></div>
+    <div class="cal-day osaka" data-date="23">23<div class="cal-dot"></div></div>
+    <div class="cal-day tokyo" data-date="24">24<div class="cal-dot"></div></div>
+    <div class="cal-day tokyo" data-date="25">25<div class="cal-dot"></div></div>
+    <div class="cal-day tokyo" data-date="26">26<div class="cal-dot"></div></div>
+    <!-- Row 5 -->
+    <div class="cal-day other" data-date="27">27</div>
+    <div class="cal-day other" data-date="28">28</div>
+    <div class="cal-day other" data-date="29">29</div>
+    <div class="cal-day other" data-date="30">30</div>
+    <div class="cal-day empty"></div>
+    <div class="cal-day empty"></div>
+    <div class="cal-day empty"></div>
+  </div>
+
+  <div class="map-legend" style="padding: 0 16px 8px;">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--seoul)"></div>Seoul</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--osaka)"></div>Osaka</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--tokyo)"></div>Tokyo</div>
+  </div>
+
+  <!-- Day detail panel (populated by JS) -->
+  <div class="day-detail" id="day-detail" style="display:none;"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 3: CHECKLIST
+════════════════════════════════════════════════ -->
+<div class="screen" id="screen-checklist">
+  <div class="app-header">
+    <h1>Checklist</h1>
+    <div class="subtitle">Tap to check off</div>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-label">
+      <span>Pre-trip tasks</span>
+      <strong id="progress-text">0 / 20</strong>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <button class="filter-btn active" data-filter="all" onclick="filterChecklist(this,'all')">All</button>
+    <button class="filter-btn seoul-f" data-filter="seoul" onclick="filterChecklist(this,'seoul')">🇰🇷 Seoul</button>
+    <button class="filter-btn osaka-f" data-filter="osaka" onclick="filterChecklist(this,'osaka')">🇯🇵 Osaka</button>
+    <button class="filter-btn tokyo-f" data-filter="tokyo" onclick="filterChecklist(this,'tokyo')">🇯🇵 Tokyo</button>
+    <button class="filter-btn" data-filter="urgent" onclick="filterChecklist(this,'urgent')">⚠️ Urgent</button>
+    <button class="filter-btn" data-filter="gear" onclick="filterChecklist(this,'gear')">🎒 Gear</button>
+  </div>
+
+  <div id="checklist-container"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 4: MAP
+════════════════════════════════════════════════ -->
+<div class="screen" id="screen-map">
+  <div class="app-header">
+    <h1>Places</h1>
+    <div class="subtitle">All locations on the itinerary</div>
+  </div>
+
+  <div class="map-tabs">
+    <button class="map-tab-btn all active" onclick="showMapCity(this,'all')">🗺 All Cities</button>
+    <button class="map-tab-btn s" onclick="showMapCity(this,'seoul')">🇰🇷 Seoul</button>
+    <button class="map-tab-btn o" onclick="showMapCity(this,'osaka')">🇯🇵 Osaka</button>
+    <button class="map-tab-btn t" onclick="showMapCity(this,'tokyo')">🇯🇵 Tokyo</button>
+    <button class="map-tab-btn t" onclick="showMapCity(this,'hakone')">🗻 Hakone</button>
+  </div>
+
+  <div class="embed-map" id="map-embed-container">
+    <iframe id="map-frame" src="" title="Trip Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+  </div>
+
+  <div class="section-heading" style="margin-top:8px;">Key spots</div>
+  <div class="place-grid" id="place-grid"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     BOTTOM TABS
+════════════════════════════════════════════════ -->
+<nav class="tabs">
+  <button class="tab active" onclick="switchTab('overview',this)">
+    <span class="icon">🗺</span>
+    <span class="label">Overview</span>
+  </button>
+  <button class="tab" onclick="switchTab('calendar',this)">
+    <span class="icon">📅</span>
+    <span class="label">Days</span>
+  </button>
+  <button class="tab" onclick="switchTab('checklist',this)">
+    <span class="icon">✅</span>
+    <span class="label">Tasks</span>
+  </button>
+  <button class="tab" onclick="switchTab('map',this)">
+    <span class="icon">📍</span>
+    <span class="label">Map</span>
+  </button>
+</nav>
+
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════ -->
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────
+
+const DAYS = {
+  17: {
+    city: 'seoul',
+    title: 'Day 1 · Arrival Seoul',
+    theme: 'Ikseon-dong + Gwangjang Market',
+    timeline: [
+      { seg: 'morning', dot: 'morning', time: 'Afternoon — Arrival', place: 'Ikseon-dong Hanok Village', desc: 'Traditional houses turned cafes and boutiques. Walk slowly, pick up a hotteok from a street cart.', tags: [] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Palace', place: 'Changdeokgung Palace + Secret Garden', desc: 'Most beautiful palace in Seoul. The Secret Garden tour (~45 min) is capacity-limited and unmissable.', order: '⚠️ Book in advance at cdg.go.kr', tags: ['book'] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Cafe', place: 'Cafe Onion Anguk', desc: 'One of Seoul\'s most famous cafes. Famous pandoro sugar pastry. Arrive before 11am or after 3pm.', tags: ['eat'] },
+      { seg: 'evening', dot: 'evening', time: 'Evening — Night Market', place: 'Gwangjang Market (광장시장)', desc: 'Seoul\'s oldest covered market. Yukhoe (beef tartare), bindaetteok pancakes, mayak gimbap. Sit at stall counters.', order: '🍽 Yukhoe, bindaetteok, mayak gimbap', tags: ['eat'] },
+    ]
+  },
+  18: {
+    city: 'seoul',
+    title: 'Day 2 · Historic Seoul',
+    theme: 'Palaces + Euljiro + BBQ',
+    timeline: [
+      { seg: 'morning', dot: 'morning', time: 'Morning — Palace', place: 'Gyeongbokgung Palace', desc: 'Arrive at 9am. Changing of the guard at 10am. Free with hanbok rental. Closed Tuesdays.', tags: [] },
+      { seg: 'morning', dot: 'morning', time: 'Lunch', place: 'Tosokchon Samgyetang', desc: 'Legendary ginseng chicken soup since 1983. Arrive at 10:30am or after 2pm to avoid worst queues.', order: '🍽 Samgyetang (ginseng chicken soup)', tags: ['eat'] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Walk', place: 'Cheonggyecheon Stream + Euljiro', desc: 'Restored urban waterway walk, then Euljiro hipster-meets-industrial district with specialty coffee.', tags: [] },
+      { seg: 'afternoon', dot: 'tip', time: 'Cafe Stop', place: 'Anthracite Coffee Euljiro', desc: 'Specialty coffee in a dramatic industrial space. One of Seoul\'s best roasters.', tags: ['eat'] },
+      { seg: 'evening', dot: 'evening', time: 'Evening — BBQ', place: 'Geumdwaeji Sikdang (금돼지식당)', desc: 'Famous pork BBQ. Go early at opening (5pm) or expect a 30-45 min wait. Counter seats for solo.', order: '🍽 Samgyeopsal + jumulleok (spiced pork)', tags: ['eat'] },
+    ]
+  },
+  19: {
+    city: 'seoul',
+    title: 'Day 3 · Hongdae + Seongsu',
+    theme: 'Shopping + Cafes + Han River',
+    timeline: [
+      { seg: 'morning', dot: 'morning', time: 'Morning — Cafe + Shop', place: 'Thanks Nature Cafe + Hongdae', desc: 'The sheep cafe (10 Hongik-ro). Then shop Musinsa Standard, Olive Young, Daiso. Stores open 10–11am.', order: '🛍 Olive Young, Musinsa, Ader Error', tags: ['eat'] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Seongsu', place: 'Cafe Onion Seongsu + Daelim Changgo', desc: 'Seoul\'s Brooklyn. Converted factory cafes. Cafe Onion for pandoro pastry, Daelim Changgo for gallery vibes.', tags: ['eat'] },
+      { seg: 'evening', dot: 'evening', time: 'Evening — Han River', place: 'Yeouido Hangang Park — Ramen Picnic', desc: 'Buy instant ramyeon from CU/GS25, cook at riverside hot water machines. Classic Seoul local tradition.', order: '🍜 Instant ramyeon + beer from 편의점', tags: ['eat'] },
+    ]
+  },
+  20: {
+    city: 'osaka',
+    title: 'Day 4 · Fly to Osaka',
+    theme: 'KE 725 + Dotonbori Night',
+    timeline: [
+      { seg: 'morning', dot: 'morning', time: 'Morning — Airport', place: 'ICN → KIX — KE 725', desc: 'Depart 9:10am, arrive 11:25am. Take Nankai Rapi:t to Namba (38 min, ¥1,430). Pick up Suica at KIX.', tags: [] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Market', place: 'Kuromon Ichiba Market (黒門市場)', desc: 'Osaka\'s kitchen market. Fresh oysters, tamagoyaki, grilled scallops — sample as you walk. Open until ~6pm.', order: '🦪 Oysters, tamagoyaki, grilled scallops', tags: ['eat'] },
+      { seg: 'evening', dot: 'evening', time: 'Evening — Canal', place: 'Dotonbori + Hozenji Yokocho', desc: 'Neon canal walk, then stone-paved Hozenji Yokocho alley with the moss-covered Fudo statue and old izakayas.', tags: [] },
+      { seg: 'evening', dot: 'evening', time: 'Dinner', place: 'Aizuya — Oldest Takoyaki (est. 1933)', desc: 'Osaka\'s original takoyaki. Try the sauce-free version first. Counter seating, queue ~15 min.', order: '🐙 Original takoyaki, sauce-free version', tags: ['eat'] },
+    ]
+  },
+  21: {
+    city: 'osaka',
+    title: 'Day 5 · Nara Day Trip 🦌',
+    theme: 'Deer Park + Tōdai-ji + Kasuga Taisha',
+    timeline: [
+      { seg: 'morning', dot: 'morning', time: 'Morning — Train', place: 'Kintetsu Nara Line from Namba', desc: 'Depart by 9am. ~30 min, ¥570 one way. Buy deer crackers (¥200) at the station exit immediately.', tags: [] },
+      { seg: 'morning', dot: 'morning', time: 'Morning — Park', place: 'Nara Park + Tōdai-ji Temple', desc: 'Bow to the deer — they bow back. Tōdai-ji houses one of the world\'s largest bronze Buddhas. Entry ¥600.', order: '🦌 Look for the pillar with a hole (Buddha\'s nostril). Try squeezing through.', tags: [] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Shrine', place: 'Kasuga Taisha Shrine', desc: 'Forested path lined with hundreds of stone lanterns and free-roaming deer. Free outer grounds, inner treasury ¥500.', tags: [] },
+      { seg: 'afternoon', dot: 'tip', time: 'Lunch', place: 'Hiraso — Kakinoha-zushi', desc: 'Nara\'s signature dish — mackerel/salmon sushi wrapped in persimmon leaves. Buy a take-away box to eat in the park.', order: '🍱 Kakinoha-zushi take-away box (¥1,000–1,500)', tags: ['eat'] },
+      { seg: 'evening', dot: 'evening', time: 'Evening — Return', place: 'Back to Osaka by 5–6pm', desc: 'Optional: walk Tenjinbashisuji Shotengai — Japan\'s longest covered shopping street, very local.', tags: [] },
+    ]
+  },
+  22: {
+    city: 'osaka',
+    title: 'Day 6 · Osaka Local',
+    theme: 'Castle + Nakazakicho + Shinsekai',
+    timeline: [
+      { seg: 'morning', dot: 'morning', time: 'Morning — Castle', place: 'Osaka Castle (大阪城)', desc: 'Park grounds are free and beautiful in April — ~3,000 cherry trees may still have late blossoms. Castle museum ¥600.', order: '⚠️ Closed last Monday of month. Arrive 9am for the grounds.', tags: [] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Neighborhood', place: 'Nakazakicho (中崎町)', desc: 'Osaka\'s best-preserved old neighborhood. Vintage clothing, indie cafes, small galleries. Walk slowly.', tags: [] },
+      { seg: 'afternoon', dot: 'tip', time: 'Cafe', place: 'Cafe Taiyo no Tou', desc: 'Beloved Nakazakicho neighborhood cafe. Coffee and light food in an old wooden building.', tags: ['eat'] },
+      { seg: 'evening', dot: 'evening', time: 'Evening — Shinsekai', place: 'Daruma Kushikatsu', desc: 'Deep-fried skewers — the Shinsekai classic. Golden rule: NEVER double-dip in communal sauce. Use the fresh cabbage.', order: '🍢 Beef, shrimp, onion, cheese skewers', tags: ['eat'] },
+    ]
+  },
+  23: {
+    city: 'tokyo',
+    title: 'Day 7 · Shinkansen to Tokyo',
+    theme: 'Travel Day + Asakusa',
+    timeline: [
+      { seg: 'morning', dot: 'morning', time: 'Morning — Train', place: 'Shinkansen Nozomi — Osaka to Tokyo', desc: 'Depart 9–10am from Shin-Osaka. ~2h20min. Reserve right-side window seat for Mt. Fuji views en route.', order: '🚄 Book in advance on Eki-net or Smartex', tags: ['book'] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Temple', place: 'Senso-ji Temple (浅草寺)', desc: 'Tokyo\'s oldest temple. Walk the iconic Kaminarimon gate and Nakamise lane. Buy ningyo-yaki cakes fresh.', tags: [] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Street', place: 'Hoppy Street (ホッピー通り)', desc: 'Row of old-fashioned izakayas with outdoor seating. Order hoppy (barley mixer), yakitori, sit outside.', order: '🍺 Hoppy + yakitori skewers outdoors', tags: ['eat'] },
+      { seg: 'evening', dot: 'evening', time: 'Dinner', place: 'Sometaro — Okonomiyaki (est. 1937)', desc: 'Cook your own on a table griddle. Dark, atmospheric, unchanged since 1937. Counter seats for solo diners.', order: '🥚 Classic pork or seafood okonomiyaki', tags: ['eat'] },
+    ]
+  },
+  24: {
+    city: 'tokyo',
+    title: 'Day 8 · Hakone Day Trip 🗻',
+    theme: 'Mt. Fuji Views + Ropeway + Lake Ashi',
+    timeline: [
+      { seg: 'morning', dot: 'morning', time: 'Early Morning — Train', place: 'Odakyu Romancecar — Shinjuku to Hakone', desc: '~85 min, ~¥2,500. Reserved panoramic seat. Depart by 8am for best Fuji visibility. Check weather night before!', order: '⚠️ Book seat in advance on Odakyu App', tags: ['book'] },
+      { seg: 'morning', dot: 'morning', time: 'Morning — Museum', place: 'Hakone Open Air Museum (彫刻の森)', desc: 'Outdoor sculpture park — genuinely excellent. Picasso gallery and foot bath are highlights. Entry ¥1,600.', tags: [] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Ropeway', place: 'Owakudani — Volcanic Valley + Ropeway', desc: 'Best elevated Fuji view on a clear day. Sulfur vents. Buy the black eggs (¥500/5) — said to add 7 years to your life.', order: '🥚 Kuro-tamago black eggs', tags: ['eat'] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Lake', place: 'Lake Ashi — Pirate Ship Ferry', desc: 'Cruise across the volcanic crater lake. Fuji reflected in calm water on clear days. Touristy but the view is real.', tags: [] },
+      { seg: 'evening', dot: 'evening', time: 'Evening — Back Shinjuku', place: 'Omoide Yokocho (思い出横丁)', desc: 'Narrow alley of tiny yakitori stalls, unchanged since the 1940s. Counter seating, smoky, atmospheric.', order: '🍢 Yakitori + cold beer at a counter stall', tags: ['eat'] },
+    ]
+  },
+  25: {
+    city: 'tokyo',
+    title: 'Day 9 · Yanaka + Shimokitazawa',
+    theme: 'Old Tokyo + Vintage + Shinjuku Gyoen',
+    timeline: [
+      { seg: 'morning', dot: 'morning', time: 'Morning — Old Neighborhood', place: 'Yanaka (谷中) + Kayaba Coffee', desc: 'Tokyo\'s best-preserved old neighborhood. Walk Yanaka Ginza, peaceful cemetery, old temples. Coffee at Kayaba (est. 1938).', order: '☕ Tamago sando (egg salad sandwich)', tags: ['eat'] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Afternoon — Indie District', place: 'Shimokitazawa (下北沢)', desc: 'Tokyo\'s indie neighborhood. Flamingo vintage, 2nd Street, Village Vanguard, curry shops. Best shopping in Tokyo.', order: '🛍 Flamingo vintage + Village Vanguard', tags: [] },
+      { seg: 'afternoon', dot: 'tip', time: 'Lunch', place: 'Babajide — Nigerian-Japanese fusion', desc: 'Tiny counter in Shimokitazawa. Unexpected and excellent. Arrive at noon opening to get a seat.', order: '🍛 Jollof rice with Japanese influences', tags: ['eat'] },
+      { seg: 'afternoon', dot: 'afternoon', time: 'Late Afternoon', place: 'Shinjuku Gyoen (新宿御苑)', desc: 'Late April may still have weeping cherry (shidarezakura) varieties. Entry ¥500. Closes at 4:30pm.', tags: [] },
+      { seg: 'evening', dot: 'evening', time: 'Final Dinner', place: 'Nagi Ramen — Golden Gai', desc: 'Legendary niboshi (dried sardine) broth ramen in a micro Golden Gai shop. Queue outside, opens 6pm.', order: '🍜 Niboshi ramen (dried sardine broth)', tags: ['eat'] },
+    ]
+  },
+  26: {
+    city: 'tokyo',
+    title: 'Day 10 · Departure Day',
+    theme: 'Meiji Shrine + Harajuku + Fly Home',
+    timeline: [
+      { seg: 'morning', dot: 'morning', time: 'Morning — Shrine', place: 'Meiji Shrine (明治神宮)', desc: 'Forest shrine in central Tokyo. Free entry. Walk the forested path. Best before 9am when quietest.', tags: [] },
+      { seg: 'morning', dot: 'morning', time: 'Morning — Walk', place: 'Harajuku + Omotesando', desc: 'Takeshita Street for street fashion and crepes. Omotesando for architecture — Prada building, Tod\'s, LVMH.', tags: [] },
+      { seg: 'afternoon', dot: 'tip', time: 'Last Lunch', place: 'Afuri Ramen Harajuku', desc: 'Yuzu shio (salt) ramen — light, citrusy, unlike anything else. The original Harajuku branch. Counter seating.', order: '🍜 Yuzu shio ramen + grilled chicken chashu', tags: ['eat'] },
+      { seg: 'afternoon', dot: 'morning', time: 'Departure', place: 'Airport — Fly Home', desc: 'Allow 90 min to get to Narita (NRT) or 60 min to Haneda (HND) from central Tokyo.', tags: [] },
+    ]
+  },
+};
+
+const CHECKLIST_DATA = [
+  // URGENT / Pre-trip bookings
+  { id: 1, cat: 'urgent', city: 'seoul', title: 'Book Changdeokgung Secret Garden', sub: 'cdg.go.kr — 1–2 weeks ahead, capacity limited', done: false },
+  { id: 2, cat: 'urgent', city: 'tokyo', title: 'Book Odakyu Romancecar seat (Hakone)', sub: 'Odakyu App — reserved panoramic train fills up on weekends', done: false },
+  { id: 3, cat: 'urgent', city: 'tokyo', title: 'Book Shibuya Sky', sub: 'shibuya-scramble-square.com — sunset slots sell out', done: false },
+  { id: 4, cat: 'urgent', city: 'tokyo', title: 'Book Shinkansen Nozomi (Apr 23)', sub: 'Eki-net or Smartex — Osaka → Tokyo ~¥14,000. Right-side window seat.', done: false },
+
+  // Seoul prep
+  { id: 5, cat: 'seoul', city: 'seoul', title: 'Download Naver Maps offline (Seoul)', sub: 'Google Maps is degraded in Korea — Naver is essential', done: false },
+  { id: 6, cat: 'seoul', city: 'seoul', title: 'Get Airalo eSIM for Korea (~$8)', sub: 'airalo.com — activate before landing at ICN', done: false },
+  { id: 7, cat: 'seoul', city: 'seoul', title: 'Pick up T-money IC card at ICN airport', sub: 'Works on all Seoul subway, buses, and convenience stores', done: false },
+  { id: 8, cat: 'seoul', city: 'seoul', title: 'Note Gwangjang Market hours (9am–10:30pm)', sub: 'Best visited 6–9pm when stalls are fully packed', done: false },
+
+  // Osaka prep
+  { id: 9, cat: 'osaka', city: 'osaka', title: 'Get Airalo eSIM for Japan (~$12)', sub: 'airalo.com — activate at KIX before leaving airport', done: false },
+  { id: 10, cat: 'osaka', city: 'osaka', title: 'Pick up Suica / ICOCA at KIX airport', sub: 'Works on all JR + private rail + convenience stores in Japan', done: false },
+  { id: 11, cat: 'osaka', city: 'osaka', title: 'Download Google Maps offline (Japan)', sub: 'Download Osaka, Nara, Tokyo, and Hakone areas', done: false },
+  { id: 12, cat: 'osaka', city: 'osaka', title: 'Confirm Nankai Rapi:t from KIX to Namba', sub: '~38 min, ¥1,430 — no booking needed, just buy at airport', done: false },
+
+  // Tokyo prep
+  { id: 13, cat: 'tokyo', city: 'tokyo', title: 'Buy Hakone Freepass in advance', sub: '¥6,000 from Shinjuku — covers ropeway, bus, ferry in Hakone', done: false },
+  { id: 14, cat: 'tokyo', city: 'tokyo', title: 'Check Mt. Fuji weather forecast (Day 8)', sub: 'fuji5.or.jp/english — check the morning of and night before', done: false },
+
+  // Gear / packing
+  { id: 15, cat: 'gear', city: 'all', title: 'Pack passport (needed for tax-free in Japan)', sub: 'Tax-free on purchases over ¥5,000 — ~8% refund. Keep accessible.', done: false },
+  { id: 16, cat: 'gear', city: 'all', title: 'Bring extra empty suitcase / collapsible bag', sub: 'Uniqlo, Muji, Olive Young, and snacks will fill it', done: false },
+  { id: 17, cat: 'gear', city: 'all', title: 'Download translation app (Papago or Google Translate)', sub: 'Papago is better for Korean. Google Translate for Japanese.', done: false },
+  { id: 18, cat: 'gear', city: 'all', title: 'Bring cash / notify bank of travel', sub: 'Japan heavily cash-based — withdraw from 7-Eleven ATMs', done: false },
+  { id: 19, cat: 'gear', city: 'all', title: 'Comfortable walking shoes (essential)', sub: 'You will walk 15,000–25,000 steps/day. No exceptions.', done: false },
+  { id: 20, cat: 'gear', city: 'all', title: 'Portable charger / power bank', sub: 'Japan power outlets are Type A (same as US) — no adapter needed', done: false },
+];
+
+const MAP_URLS = {
+  all: 'https://www.google.com/maps/embed?pb=!1m40!1m8!1m3!1d13600000!2d133.0!3d37.0!3m2!1i1024!2i768!4f13.1!4m29!3e0!4m5!1s0x357ca2012d5c6505%3A0x1b0c4fef49c68b!2sSeoul!3m2!1d37.5665!2d126.978!4m5!1s0x6000e8da89a5491b%3A0x58c1f4d32c7e1901!2sOsaka!3m2!1d34.6937!2d135.5022!4m5!1s0x605d1b87f02e57e7%3A0x2e01618b22571b89!2sTokyo!3m2!1d35.6762!2d139.6503!4m5!1s0x601842d1b0a3a5e9%3A0xa6eded7d17e8c!2sHakone!3m2!1d35.2322!2d139.1069!5e0!3m2!1sen!2sjp',
+  seoul: 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d50590!2d126.9779692!3d37.5665351!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357ca2012d5c6505%3A0x1b0c4fef49c68b!2sSeoul!5e0!3m2!1sen!2skr',
+  osaka: 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d52532!2d135.5022535!3d34.6937249!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6000e8da89a5491b%3A0x58c1f4d32c7e1901!2sOsaka!5e0!3m2!1sen!2sjp',
+  tokyo: 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d52408!2d139.6503!3d35.6762!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x605d1b87f02e57e7%3A0x2e01618b22571b89!2sTokyo!5e0!3m2!1sen!2sjp',
+  hakone: 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d53000!2d139.0669!3d35.2322!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x601842d1b0a3a5e9%3A0xa6eded7d17e8c!2sHakone!5e0!3m2!1sen!2sjp',
+};
+
+const PLACES = [
+  { icon: '🏯', name: 'Gyeongbokgung Palace', type: 'Seoul · Historic site', city: 'seoul', url: 'https://maps.app.goo.gl/6nDhA' },
+  { icon: '🛒', name: 'Gwangjang Market', type: 'Seoul · Night market', city: 'seoul', url: 'https://maps.app.goo.gl/5RJT' },
+  { icon: '☕', name: 'Cafe Onion Seongsu', type: 'Seoul · Cafe', city: 'seoul', url: 'https://maps.app.goo.gl/onion' },
+  { icon: '🌊', name: 'Yeouido Hangang Park', type: 'Seoul · Park', city: 'seoul', url: 'https://maps.app.goo.gl/han' },
+  { icon: '🐙', name: 'Aizuya Takoyaki', type: 'Osaka · Restaurant (est. 1933)', city: 'osaka', url: 'https://maps.app.goo.gl/aizuya' },
+  { icon: '🏯', name: 'Osaka Castle', type: 'Osaka · Historic site', city: 'osaka', url: 'https://maps.app.goo.gl/osakajo' },
+  { icon: '🦌', name: 'Nara Deer Park', type: 'Nara · Day trip', city: 'osaka', url: 'https://maps.app.goo.gl/nara' },
+  { icon: '🏛️', name: 'Tōdai-ji Temple', type: 'Nara · UNESCO Temple', city: 'osaka', url: 'https://maps.app.goo.gl/todaiji' },
+  { icon: '⛩️', name: 'Senso-ji Temple', type: 'Tokyo · Asakusa', city: 'tokyo', url: 'https://maps.app.goo.gl/sensoji' },
+  { icon: '🗻', name: 'Owakudani', type: 'Hakone · Mt. Fuji views', city: 'tokyo', url: 'https://maps.app.goo.gl/owaku' },
+  { icon: '🧥', name: 'Shimokitazawa', type: 'Tokyo · Vintage shopping', city: 'tokyo', url: 'https://maps.app.goo.gl/shimo' },
+  { icon: '🌸', name: 'Shinjuku Gyoen', type: 'Tokyo · Park', city: 'tokyo', url: 'https://maps.app.goo.gl/gyoen' },
+];
+
+// ─── TABS ──────────────────────────────────────────────────────────────────
+
+function switchTab(name, el) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ─── CALENDAR ──────────────────────────────────────────────────────────────
+
+let selectedDate = null;
+
+document.querySelectorAll('.cal-day[data-date]').forEach(el => {
+  el.addEventListener('click', () => {
+    const d = parseInt(el.dataset.date);
+    if (!DAYS[d]) return;
+    document.querySelectorAll('.cal-day').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedDate = d;
+    renderDayDetail(d);
+  });
+});
+
+function renderDayDetail(d) {
+  const day = DAYS[d];
+  const det = document.getElementById('day-detail');
+  if (!day) { det.style.display = 'none'; return; }
+  
+  const cityColor = { seoul: 'var(--seoul)', osaka: 'var(--osaka)', tokyo: 'var(--tokyo)' };
+  const cityLabel = { seoul: '🇰🇷 Seoul', osaka: '🇯🇵 Osaka', tokyo: '🇯🇵 Tokyo' };
+  
+  const tl = day.timeline.map((item, i) => `
+    <div class="tl-item">
+      <div class="tl-left">
+        <div class="tl-dot ${item.dot}"></div>
+        ${i < day.timeline.length - 1 ? '<div class="tl-line"></div>' : ''}
+      </div>
+      <div class="tl-body">
+        <div class="tl-time">${item.time}</div>
+        <div class="tl-place">${item.place}</div>
+        <div class="tl-desc">${item.desc}</div>
+        ${item.order ? `<div class="tl-order"><span class="tl-order-icon">📝</span><span class="tl-order-text">${item.order}</span></div>` : ''}
+        <div class="tl-tags">
+          ${item.tags.map(t => `<span class="tl-tag ${t}">${t === 'book' ? '⚠️ Book ahead' : '🍽 Eat here'}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+  
+  const dateStr = `April ${d}, 2026`;
+  const dowStr = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(2026, 3, d).getDay()];
+
+  det.style.display = 'block';
+  det.innerHTML = `
+    <div class="day-detail-header">
+      <div class="day-detail-date">
+        <div class="day-num" style="color:${cityColor[day.city]}">${d}</div>
+        <div class="day-full">${dowStr}, ${dateStr}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="day-detail-title">${day.title}</div>
+        <div class="day-detail-theme">${day.theme}</div>
+      </div>
+    </div>
+    <div class="timeline">${tl}</div>
+  `;
+  det.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─── CHECKLIST ──────────────────────────────────────────────────────────────
+
+let checkState = {};
+CHECKLIST_DATA.forEach(item => { checkState[item.id] = item.done; });
+
+let currentFilter = 'all';
+
+function filterChecklist(el, filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderChecklist();
+}
+
+function renderChecklist() {
+  const container = document.getElementById('checklist-container');
+  
+  let filtered = CHECKLIST_DATA.filter(item => {
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 'urgent') return item.cat === 'urgent';
+    if (currentFilter === 'gear') return item.cat === 'gear';
+    return item.city === currentFilter;
+  });
+  
+  const sections = {};
+  filtered.forEach(item => {
+    const key = item.cat === 'urgent' ? 'urgent' : item.cat === 'gear' ? 'gear' : item.city;
+    if (!sections[key]) sections[key] = [];
+    sections[key].push(item);
+  });
+  
+  const sectionLabels = {
+    urgent: '⚠️ Book before departure',
+    seoul: '🇰🇷 Seoul prep',
+    osaka: '🇯🇵 Osaka + Japan prep',
+    tokyo: '🇯🇵 Tokyo prep',
+    gear: '🎒 Gear + packing',
+  };
+  
+  let html = '';
+  Object.keys(sections).forEach(sec => {
+    html += `<div class="checklist-section"><div class="checklist-section-title">${sectionLabels[sec] || sec}</div><div class="check-items">`;
+    sections[sec].forEach(item => {
+      const done = checkState[item.id];
+      const cityClass = item.city !== 'all' ? item.city : 'all';
+      const isUrgent = item.cat === 'urgent';
+      html += `
+        <div class="check-item ${done ? 'done' : ''} ${isUrgent && !done ? 'urgent' : ''}" onclick="toggleCheck(${item.id})">
+          <div class="check-box">${done ? '✓' : ''}</div>
+          <div class="check-content">
+            <div class="check-title">${item.title}</div>
+            <div class="check-sub">${item.sub}</div>
+            <div class="check-badge-row">
+              <span class="check-badge ${cityClass}">${item.city === 'all' ? '🌏 All cities' : item.city === 'seoul' ? '🇰🇷 Seoul' : item.city === 'osaka' ? '🇯🇵 Osaka' : '🇯🇵 Tokyo'}</span>
+              ${isUrgent ? '<span class="check-badge urgent">Book now</span>' : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+  });
+  
+  container.innerHTML = html;
+  updateProgress();
+}
+
+function toggleCheck(id) {
+  checkState[id] = !checkState[id];
+  // Haptic feedback on iOS
+  if (window.navigator && window.navigator.vibrate) navigator.vibrate(10);
+  renderChecklist();
+}
+
+function updateProgress() {
+  const total = CHECKLIST_DATA.length;
+  const done = Object.values(checkState).filter(Boolean).length;
+  document.getElementById('progress-text').textContent = `${done} / ${total}`;
+  document.getElementById('progress-fill').style.width = `${(done/total)*100}%`;
+}
+
+// ─── MAP ──────────────────────────────────────────────────────────────────
+
+let currentMapCity = 'all';
+
+function showMapCity(el, city) {
+  currentMapCity = city;
+  document.querySelectorAll('.map-tab-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('map-frame').src = MAP_URLS[city];
+  renderPlaceGrid(city);
+}
+
+function renderPlaceGrid(filter) {
+  const grid = document.getElementById('place-grid');
+  const filtered = filter === 'all' ? PLACES :
+    filter === 'hakone' ? PLACES.filter(p => p.name.includes('Owakudani') || p.name.includes('Hakone')) :
+    PLACES.filter(p => p.city === filter || (filter === 'osaka' && p.city === 'osaka'));
+  
+  grid.innerHTML = filtered.map(p => `
+    <a class="place-card" href="${p.url}" target="_blank" rel="noopener">
+      <div class="place-card-icon">${p.icon}</div>
+      <div class="place-card-name">${p.name}</div>
+      <div class="place-card-type">${p.type}</div>
+    </a>
+  `).join('');
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+
+document.getElementById('map-frame').src = MAP_URLS.all;
+renderChecklist();
+renderPlaceGrid('all');
+
+// Auto-select April 17 on calendar tab open
+document.querySelector('.tab[onclick*="calendar"]').addEventListener('click', () => {
+  if (!selectedDate) {
+    const el17 = document.querySelector('.cal-day[data-date="17"]');
+    if (el17) { el17.click(); }
+  }
+});
+
+</script>
+</body>
+</html>
