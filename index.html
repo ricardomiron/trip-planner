@@ -426,6 +426,26 @@
   .add-activity-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - 32px); margin: 4px 16px 16px; padding: 12px; border-radius: var(--r-sm); border: 1px dashed var(--border); background: transparent; color: var(--text3); font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; }
   .add-activity-btn:active { background: var(--surface2); color: var(--gold); border-color: var(--gold); }
 
+  /* ── TASK STATUS BADGE (on book-tagged activities) ── */
+  .task-status { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+  .task-status.done { background: rgba(76,175,125,.15); color: var(--green); }
+  .task-status.pending { background: rgba(232,80,58,.12); color: var(--seoul); }
+
+  /* ── CHECKLIST TASK ACTIONS ── */
+  .check-item-row { display: flex; align-items: flex-start; gap: 12px; flex: 1; min-width: 0; }
+  .check-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; padding-top: 2px; }
+  .check-action-btn { padding: 4px 7px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text3); font-size: 11px; cursor: pointer; font-family: inherit; line-height: 1; }
+  .check-action-btn:active { background: var(--surface2); }
+  .task-day-link { display: inline-flex; align-items: center; gap: 3px; margin-top: 5px; font-size: 11px; color: var(--gold); font-weight: 500; cursor: pointer; }
+
+  /* ── PER-DAY NOTES ── */
+  .notes-section { margin: 0 16px 16px; }
+  .notes-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-sm); cursor: pointer; color: var(--text2); font-size: 13px; font-weight: 500; font-family: inherit; transition: background .15s; }
+  .notes-toggle:active { background: var(--surface3); }
+  .notes-has-content { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); display: inline-block; margin-left: 6px; vertical-align: middle; flex-shrink: 0; }
+  .notes-area { display: block; width: 100%; background: var(--surface2); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--r-sm) var(--r-sm); padding: 12px 14px; color: var(--text); font-family: inherit; font-size: 13px; line-height: 1.5; resize: none; min-height: 80px; outline: none; }
+  .notes-area:focus { border-color: var(--gold); }
+
 </style>
 </head>
 <body>
@@ -473,11 +493,11 @@
       <div class="stat-label">Days</div>
     </div>
     <div class="stat-box">
-      <div class="stat-num" style="color:var(--green)">32</div>
+      <div class="stat-num" id="stat-places" style="color:var(--green)">0</div>
       <div class="stat-label">Places</div>
     </div>
     <div class="stat-box">
-      <div class="stat-num" style="color:var(--seoul)">3</div>
+      <div class="stat-num" id="stat-book" style="color:var(--seoul)">0</div>
       <div class="stat-label">Book now</div>
     </div>
   </div>
@@ -486,56 +506,23 @@
     <div class="card-header">
       <div class="card-title">⚠️ Must book before leaving</div>
     </div>
-    <div class="booking-list">
-      <div class="booking-item">
-        <div class="booking-icon">🏯</div>
-        <div class="booking-text">
-          <div class="booking-title">Changdeokgung Secret Garden</div>
-          <div class="booking-sub">Seoul · Capacity limited · Book 1–2 weeks ahead</div>
-        </div>
-        <div class="booking-badge urgent">Book</div>
-      </div>
-      <div class="booking-item">
-        <div class="booking-icon">🚂</div>
-        <div class="booking-text">
-          <div class="booking-title">Odakyu Romancecar</div>
-          <div class="booking-sub">Tokyo → Hakone · Reserved panoramic seat</div>
-        </div>
-        <div class="booking-badge urgent">Book</div>
-      </div>
-      <div class="booking-item">
-        <div class="booking-icon">🌆</div>
-        <div class="booking-text">
-          <div class="booking-title">Shibuya Sky</div>
-          <div class="booking-sub">Tokyo · Sunset slots sell out fast</div>
-        </div>
-        <div class="booking-badge urgent">Book</div>
-      </div>
-      <div class="booking-item">
-        <div class="booking-icon">🚄</div>
-        <div class="booking-text">
-          <div class="booking-title">Shinkansen Nozomi</div>
-          <div class="booking-sub">Osaka → Tokyo · Apr 23 · ~¥14,000</div>
-        </div>
-        <div class="booking-badge urgent">Book</div>
-      </div>
-    </div>
+    <div class="booking-list" id="booking-list-dynamic"></div>
   </div>
 
   <div class="card">
     <div class="card-header">
-      <div class="card-title">✈️ Flights (booked)</div>
+      <div class="card-title">🚄 Transport</div>
+      <button onclick="openTransportModal(null)" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;">＋ Add</button>
     </div>
-    <div class="booking-list">
-      <div class="booking-item">
-        <div class="booking-icon">✈️</div>
-        <div class="booking-text">
-          <div class="booking-title">KE 725 — Seoul → Osaka</div>
-          <div class="booking-sub">Apr 20 · ICN 09:10 → KIX 11:25</div>
-        </div>
-        <div class="booking-badge ok">Done</div>
-      </div>
+    <div class="booking-list" id="transport-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🏨 Accommodation</div>
+      <button onclick="openAccommodationModal(null)" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;">＋ Add</button>
     </div>
+    <div class="booking-list" id="accommodation-list"></div>
   </div>
 </div>
 
@@ -581,8 +568,8 @@
     <div class="cal-day other" data-date="15">15</div>
     <div class="cal-day other" data-date="16">16</div>
     <div class="cal-day seoul" data-date="17">17<div class="cal-dot"></div></div>
-    <div class="cal-day other" data-date="18">18</div>
-    <div class="cal-day other" data-date="19">19</div>
+    <div class="cal-day seoul" data-date="18">18<div class="cal-dot"></div></div>
+    <div class="cal-day seoul" data-date="19">19<div class="cal-dot"></div></div>
     <!-- Row 4 -->
     <div class="cal-day seoul" data-date="20">20<div class="cal-dot"></div></div>
     <div class="cal-day osaka" data-date="21">21<div class="cal-dot"></div></div>
@@ -641,6 +628,9 @@
   </div>
 
   <div id="checklist-container"></div>
+  <div style="padding: 0 16px 8px;">
+    <button class="add-activity-btn" onclick="openTaskModal(null)" style="margin:0;width:100%">＋ Add task</button>
+  </div>
 </div>
 
 
@@ -736,6 +726,139 @@
     <div class="form-actions">
       <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
       <button class="btn-save" onclick="saveActivity()">Save</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     ACCOMMODATION MODAL
+════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="accommodation-modal" onclick="handleAccommodationOverlayClick(event)">
+  <div class="modal" style="position:relative;">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeAccommodationModal()">✕</button>
+    <div class="modal-title" id="accommodation-modal-title">Add Accommodation</div>
+    <div class="form-row" style="align-items:flex-end;">
+      <div class="form-group" style="flex:0 0 72px">
+        <label class="form-label">Icon</label>
+        <input class="form-input" id="ac-icon" type="text" placeholder="🏨" maxlength="2" style="text-align:center;font-size:20px;padding:7px 4px;">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Name</label>
+        <input class="form-input" id="ac-name" type="text" placeholder="e.g. Naru Seoul MGallery">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Check-in</label>
+        <input class="form-input" id="ac-checkin" type="text" placeholder="e.g. Apr 17">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Check-out</label>
+        <input class="form-input" id="ac-checkout" type="text" placeholder="e.g. Apr 20">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Address / Notes (optional)</label>
+      <input class="form-input" id="ac-sub" type="text" placeholder="e.g. Mapo-gu, Seoul · Confirmation #ABC123">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <select class="form-input form-select" id="ac-status">
+        <option value="booked">✅ Booked</option>
+        <option value="pending">⏳ Not booked yet</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeAccommodationModal()">Cancel</button>
+      <button class="btn-save" onclick="saveAccommodation()">Save</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     TRANSPORT MODAL
+════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="transport-modal" onclick="handleTransportOverlayClick(event)">
+  <div class="modal" style="position:relative;">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeTransportModal()">✕</button>
+    <div class="modal-title" id="transport-modal-title">Add Transport</div>
+    <div class="form-row" style="align-items:flex-end;">
+      <div class="form-group" style="flex:0 0 72px">
+        <label class="form-label">Icon</label>
+        <input class="form-input" id="tr-icon" type="text" placeholder="✈️" maxlength="2" style="text-align:center;font-size:20px;padding:7px 4px;">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Title</label>
+        <input class="form-input" id="tr-title" type="text" placeholder="e.g. KE 725 — Seoul → Osaka">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Details</label>
+      <input class="form-input" id="tr-sub" type="text" placeholder="e.g. Apr 20 · ICN 09:10 → KIX 11:25">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <select class="form-input form-select" id="tr-status">
+        <option value="booked">✅ Booked</option>
+        <option value="pending">⏳ Not booked yet</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeTransportModal()">Cancel</button>
+      <button class="btn-save" onclick="saveTransport()">Save</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     TASK MODAL
+════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="task-modal" onclick="handleTaskOverlayClick(event)">
+  <div class="modal" style="position:relative;">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeTaskModal()">✕</button>
+    <div class="modal-title" id="task-modal-title">Add Task</div>
+    <div class="form-group">
+      <label class="form-label">Task Title</label>
+      <input class="form-input" id="task-field-title" type="text" placeholder="e.g. Book Shibuya Sky">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes / Details (optional)</label>
+      <input class="form-input" id="task-field-sub" type="text" placeholder="Website, timing, price...">
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Category</label>
+        <select class="form-input form-select" id="task-field-cat">
+          <option value="urgent">⚠️ Urgent</option>
+          <option value="seoul">🇰🇷 Seoul</option>
+          <option value="osaka">🇯🇵 Osaka</option>
+          <option value="tokyo">🇯🇵 Tokyo</option>
+          <option value="gear">🎒 Gear</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">City</label>
+        <select class="form-input form-select" id="task-field-city">
+          <option value="all">🌏 All</option>
+          <option value="seoul">🇰🇷 Seoul</option>
+          <option value="osaka">🇯🇵 Osaka</option>
+          <option value="tokyo">🇯🇵 Tokyo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Linked Day (optional)</label>
+      <select class="form-input form-select" id="task-field-day"></select>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeTaskModal()">Cancel</button>
+      <button class="btn-save" onclick="saveTask()">Save</button>
     </div>
   </div>
 </div>
@@ -888,26 +1011,26 @@ const DAYS = {
 
 const CHECKLIST_DATA = [
   // URGENT / Pre-trip bookings
-  { id: 1, cat: 'urgent', city: 'seoul', title: 'Book Changdeokgung Secret Garden', sub: 'cdg.go.kr — 1–2 weeks ahead, capacity limited', done: false },
-  { id: 2, cat: 'urgent', city: 'tokyo', title: 'Book Odakyu Romancecar seat (Hakone)', sub: 'Odakyu App — reserved panoramic train fills up on weekends', done: false },
-  { id: 3, cat: 'urgent', city: 'tokyo', title: 'Book Shibuya Sky', sub: 'shibuya-scramble-square.com — sunset slots sell out', done: false },
-  { id: 4, cat: 'urgent', city: 'tokyo', title: 'Book Shinkansen Nozomi (Apr 23)', sub: 'Eki-net or Smartex — Osaka → Tokyo ~¥14,000. Right-side window seat.', done: false },
+  { id: 1, cat: 'urgent', city: 'seoul', title: 'Book Changdeokgung Secret Garden', sub: 'cdg.go.kr — 1–2 weeks ahead, capacity limited', done: false, day: 17 },
+  { id: 2, cat: 'urgent', city: 'tokyo', title: 'Book Odakyu Romancecar seat (Hakone)', sub: 'Odakyu App — reserved panoramic train fills up on weekends', done: false, day: 24 },
+  { id: 3, cat: 'urgent', city: 'tokyo', title: 'Book Shibuya Sky', sub: 'shibuya-scramble-square.com — sunset slots sell out', done: false, day: 25 },
+  { id: 4, cat: 'urgent', city: 'tokyo', title: 'Book Shinkansen Nozomi (Apr 23)', sub: 'Eki-net or Smartex — Osaka → Tokyo ~¥14,000. Right-side window seat.', done: false, day: 23 },
 
   // Seoul prep
   { id: 5, cat: 'seoul', city: 'seoul', title: 'Download Naver Maps offline (Seoul)', sub: 'Google Maps is degraded in Korea — Naver is essential', done: false },
   { id: 6, cat: 'seoul', city: 'seoul', title: 'Get Airalo eSIM for Korea (~$8)', sub: 'airalo.com — activate before landing at ICN', done: false },
-  { id: 7, cat: 'seoul', city: 'seoul', title: 'Pick up T-money IC card at ICN airport', sub: 'Works on all Seoul subway, buses, and convenience stores', done: false },
-  { id: 8, cat: 'seoul', city: 'seoul', title: 'Note Gwangjang Market hours (9am–10:30pm)', sub: 'Best visited 6–9pm when stalls are fully packed', done: false },
+  { id: 7, cat: 'seoul', city: 'seoul', title: 'Pick up T-money IC card at ICN airport', sub: 'Works on all Seoul subway, buses, and convenience stores', done: false, day: 17 },
+  { id: 8, cat: 'seoul', city: 'seoul', title: 'Note Gwangjang Market hours (9am–10:30pm)', sub: 'Best visited 6–9pm when stalls are fully packed', done: false, day: 17 },
 
   // Osaka prep
-  { id: 9, cat: 'osaka', city: 'osaka', title: 'Get Airalo eSIM for Japan (~$12)', sub: 'airalo.com — activate at KIX before leaving airport', done: false },
-  { id: 10, cat: 'osaka', city: 'osaka', title: 'Pick up Suica / ICOCA at KIX airport', sub: 'Works on all JR + private rail + convenience stores in Japan', done: false },
+  { id: 9, cat: 'osaka', city: 'osaka', title: 'Get Airalo eSIM for Japan (~$12)', sub: 'airalo.com — activate at KIX before leaving airport', done: false, day: 20 },
+  { id: 10, cat: 'osaka', city: 'osaka', title: 'Pick up Suica / ICOCA at KIX airport', sub: 'Works on all JR + private rail + convenience stores in Japan', done: false, day: 20 },
   { id: 11, cat: 'osaka', city: 'osaka', title: 'Download Google Maps offline (Japan)', sub: 'Download Osaka, Nara, Tokyo, and Hakone areas', done: false },
-  { id: 12, cat: 'osaka', city: 'osaka', title: 'Confirm Nankai Rapi:t from KIX to Namba', sub: '~38 min, ¥1,430 — no booking needed, just buy at airport', done: false },
+  { id: 12, cat: 'osaka', city: 'osaka', title: 'Confirm Nankai Rapi:t from KIX to Namba', sub: '~38 min, ¥1,430 — no booking needed, just buy at airport', done: false, day: 20 },
 
   // Tokyo prep
-  { id: 13, cat: 'tokyo', city: 'tokyo', title: 'Buy Hakone Freepass in advance', sub: '¥6,000 from Shinjuku — covers ropeway, bus, ferry in Hakone', done: false },
-  { id: 14, cat: 'tokyo', city: 'tokyo', title: 'Check Mt. Fuji weather forecast (Day 8)', sub: 'fuji5.or.jp/english — check the morning of and night before', done: false },
+  { id: 13, cat: 'tokyo', city: 'tokyo', title: 'Buy Hakone Freepass in advance', sub: '¥6,000 from Shinjuku — covers ropeway, bus, ferry in Hakone', done: false, day: 24 },
+  { id: 14, cat: 'tokyo', city: 'tokyo', title: 'Check Mt. Fuji weather forecast (Day 8)', sub: 'fuji5.or.jp/english — check the morning of and night before', done: false, day: 24 },
 
   // Gear / packing
   { id: 15, cat: 'gear', city: 'all', title: 'Pack passport (needed for tax-free in Japan)', sub: 'Tax-free on purchases over ¥5,000 — ~8% refund. Keep accessible.', done: false },
@@ -988,6 +1111,7 @@ function renderDayDetail(d) {
         <div class="tl-tags">
           ${item.tags.map(t => `<span class="tl-tag ${t}">${t === 'book' ? '⚠️ Book ahead' : '🍽 Eat here'}</span>`).join('')}
         </div>
+        ${item.tags.includes('book') ? bookStatusBadge(item.place) : ''}
         ${item.url ? `<a class="tl-map-link" href="${item.url}" target="_blank" rel="noopener">📍 Open in Maps</a>` : ''}
         <div class="tl-actions">
           <button class="tl-btn edit" onclick="openEditModal(${d},${i})">✏️ Edit</button>
@@ -1014,6 +1138,13 @@ function renderDayDetail(d) {
     </div>
     <div class="timeline">${tl}</div>
     <button class="add-activity-btn" onclick="openEditModal(${d},null)">＋ Add activity</button>
+    <div class="notes-section">
+      <button class="notes-toggle" onclick="toggleNotes(${d})">
+        <span>📝 Notes${DAY_NOTES[d] ? '<span class="notes-has-content"></span>' : ''}</span>
+        <span>${notesOpen[d] ? '▾' : '▸'}</span>
+      </button>
+      ${notesOpen[d] ? `<textarea class="notes-area" placeholder="Confirmation numbers, thoughts, what you actually did..." oninput="DAY_NOTES[${d}]=this.value">${(DAY_NOTES[d]||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>` : ''}
+    </div>
   `;
   det.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -1065,15 +1196,20 @@ function renderChecklist() {
       const cityClass = item.city !== 'all' ? item.city : 'all';
       const isUrgent = item.cat === 'urgent';
       html += `
-        <div class="check-item ${done ? 'done' : ''} ${isUrgent && !done ? 'urgent' : ''}" onclick="toggleCheck(${item.id})">
-          <div class="check-box">${done ? '✓' : ''}</div>
-          <div class="check-content">
+        <div class="check-item ${done ? 'done' : ''} ${isUrgent && !done ? 'urgent' : ''}" onclick="toggleCheck(${item.id})" style="display:flex;gap:10px;align-items:flex-start;">
+          <div class="check-box" style="flex-shrink:0;margin-top:1px;">${done ? '✓' : ''}</div>
+          <div class="check-content" style="flex:1;min-width:0;">
             <div class="check-title">${item.title}</div>
             <div class="check-sub">${item.sub}</div>
             <div class="check-badge-row">
               <span class="check-badge ${cityClass}">${item.city === 'all' ? '🌏 All cities' : item.city === 'seoul' ? '🇰🇷 Seoul' : item.city === 'osaka' ? '🇯🇵 Osaka' : '🇯🇵 Tokyo'}</span>
               ${isUrgent ? '<span class="check-badge urgent">Book now</span>' : ''}
             </div>
+            ${item.day ? `<div class="task-day-link" onclick="event.stopPropagation();jumpToDay(${item.day})">→ View Apr ${item.day}</div>` : ''}
+          </div>
+          <div class="check-actions">
+            <button class="check-action-btn" onclick="event.stopPropagation();openTaskModal(${item.id})">✏️</button>
+            <button class="check-action-btn" onclick="event.stopPropagation();deleteTask(${item.id})">🗑</button>
           </div>
         </div>
       `;
@@ -1087,16 +1223,17 @@ function renderChecklist() {
 
 function toggleCheck(id) {
   checkState[id] = !checkState[id];
-  // Haptic feedback on iOS
   if (window.navigator && window.navigator.vibrate) navigator.vibrate(10);
   renderChecklist();
+  updateOverviewStats();
+  renderBookingCard();
 }
 
 function updateProgress() {
   const total = CHECKLIST_DATA.length;
-  const done = Object.values(checkState).filter(Boolean).length;
+  const done = CHECKLIST_DATA.filter(item => checkState[item.id]).length;
   document.getElementById('progress-text').textContent = `${done} / ${total}`;
-  document.getElementById('progress-fill').style.width = `${(done/total)*100}%`;
+  document.getElementById('progress-fill').style.width = total > 0 ? `${(done/total)*100}%` : '0%';
 }
 
 // ─── MAP ──────────────────────────────────────────────────────────────────
@@ -1226,14 +1363,358 @@ function saveActivity() {
     DAYS[editModalDay].timeline.push(item);
   }
 
+  if (item.tags.includes('book') && !findMatchingTask(item.place)) {
+    if (confirm(`Create a checklist task to book "${item.place}"?`)) {
+      const newId = Math.max(...CHECKLIST_DATA.map(t => t.id)) + 1;
+      CHECKLIST_DATA.push({ id: newId, cat: 'urgent', city: DAYS[editModalDay].city, title: `Book ${item.place}`, sub: '', done: false, day: editModalDay });
+      checkState[newId] = false;
+    }
+  }
+
   closeEditModal();
   renderDayDetail(editModalDay);
+  renderChecklist();
+  updateOverviewStats();
+  renderBookingCard();
+  renderPlaceGrid(currentMapCity);
 }
 
 function deleteActivity(day, index) {
   if (!confirm('Remove this activity?')) return;
   DAYS[day].timeline.splice(index, 1);
   renderDayDetail(day);
+  updateOverviewStats();
+  renderBookingCard();
+  renderPlaceGrid(currentMapCity);
+}
+
+// ─── ACCOMMODATION ────────────────────────────────────────────────────────
+
+const ACCOMMODATION_DATA = [];
+
+function renderAccommodationCard() {
+  const list = document.getElementById('accommodation-list');
+  if (!list) return;
+  if (ACCOMMODATION_DATA.length === 0) {
+    list.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:8px 0;">No accommodation added yet.</div>';
+    return;
+  }
+  list.innerHTML = ACCOMMODATION_DATA.map(a => `
+    <div class="booking-item">
+      <div class="booking-icon">${a.icon}</div>
+      <div class="booking-text">
+        <div class="booking-title">${a.name}</div>
+        <div class="booking-sub">${a.checkin} → ${a.checkout}${a.sub ? ' · ' + a.sub : ''}</div>
+      </div>
+      <div class="booking-badge ${a.status === 'booked' ? 'ok' : 'urgent'}">${a.status === 'booked' ? 'Done' : 'Book'}</div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-left:6px;">
+        <button class="check-action-btn" onclick="openAccommodationModal(${a.id})">✏️</button>
+        <button class="check-action-btn" onclick="deleteAccommodation(${a.id})">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+let editAccommodationId = null;
+
+function openAccommodationModal(id) {
+  editAccommodationId = id;
+  if (id !== null) {
+    const a = ACCOMMODATION_DATA.find(x => x.id === id);
+    document.getElementById('accommodation-modal-title').textContent = 'Edit Accommodation';
+    document.getElementById('ac-icon').value = a.icon;
+    document.getElementById('ac-name').value = a.name;
+    document.getElementById('ac-checkin').value = a.checkin;
+    document.getElementById('ac-checkout').value = a.checkout;
+    document.getElementById('ac-sub').value = a.sub || '';
+    document.getElementById('ac-status').value = a.status;
+  } else {
+    document.getElementById('accommodation-modal-title').textContent = 'Add Accommodation';
+    document.getElementById('ac-icon').value = '';
+    document.getElementById('ac-name').value = '';
+    document.getElementById('ac-checkin').value = '';
+    document.getElementById('ac-checkout').value = '';
+    document.getElementById('ac-sub').value = '';
+    document.getElementById('ac-status').value = 'booked';
+  }
+  document.getElementById('accommodation-modal').classList.add('open');
+}
+
+function closeAccommodationModal() {
+  document.getElementById('accommodation-modal').classList.remove('open');
+}
+
+function handleAccommodationOverlayClick(e) {
+  if (e.target === document.getElementById('accommodation-modal')) closeAccommodationModal();
+}
+
+function saveAccommodation() {
+  const name = document.getElementById('ac-name').value.trim();
+  if (!name) { document.getElementById('ac-name').focus(); return; }
+  const entry = {
+    icon: document.getElementById('ac-icon').value.trim() || '🏨',
+    name,
+    checkin: document.getElementById('ac-checkin').value.trim(),
+    checkout: document.getElementById('ac-checkout').value.trim(),
+    sub: document.getElementById('ac-sub').value.trim(),
+    status: document.getElementById('ac-status').value,
+  };
+  if (editAccommodationId !== null) {
+    const idx = ACCOMMODATION_DATA.findIndex(x => x.id === editAccommodationId);
+    ACCOMMODATION_DATA[idx] = { id: editAccommodationId, ...entry };
+  } else {
+    const newId = ACCOMMODATION_DATA.length ? Math.max(...ACCOMMODATION_DATA.map(x => x.id)) + 1 : 1;
+    ACCOMMODATION_DATA.push({ id: newId, ...entry });
+  }
+  closeAccommodationModal();
+  renderAccommodationCard();
+}
+
+function deleteAccommodation(id) {
+  if (!confirm('Remove this accommodation?')) return;
+  ACCOMMODATION_DATA.splice(ACCOMMODATION_DATA.findIndex(x => x.id === id), 1);
+  renderAccommodationCard();
+}
+
+// ─── TRANSPORT ────────────────────────────────────────────────────────────
+
+const TRANSPORT_DATA = [
+  { id: 1, icon: '✈️', title: 'KE 725 — Seoul → Osaka', sub: 'Apr 20 · ICN 09:10 → KIX 11:25', status: 'booked' },
+];
+
+function renderTransportCard() {
+  const list = document.getElementById('transport-list');
+  if (!list) return;
+  if (TRANSPORT_DATA.length === 0) {
+    list.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:8px 0;">No transport added yet.</div>';
+    return;
+  }
+  list.innerHTML = TRANSPORT_DATA.map(t => `
+    <div class="booking-item">
+      <div class="booking-icon">${t.icon}</div>
+      <div class="booking-text">
+        <div class="booking-title">${t.title}</div>
+        <div class="booking-sub">${t.sub}</div>
+      </div>
+      <div class="booking-badge ${t.status === 'booked' ? 'ok' : 'urgent'}">${t.status === 'booked' ? 'Done' : 'Book'}</div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-left:6px;">
+        <button class="check-action-btn" onclick="openTransportModal(${t.id})">✏️</button>
+        <button class="check-action-btn" onclick="deleteTransport(${t.id})">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+let editTransportId = null;
+
+function openTransportModal(id) {
+  editTransportId = id;
+  if (id !== null) {
+    const t = TRANSPORT_DATA.find(x => x.id === id);
+    document.getElementById('transport-modal-title').textContent = 'Edit Transport';
+    document.getElementById('tr-icon').value = t.icon;
+    document.getElementById('tr-title').value = t.title;
+    document.getElementById('tr-sub').value = t.sub;
+    document.getElementById('tr-status').value = t.status;
+  } else {
+    document.getElementById('transport-modal-title').textContent = 'Add Transport';
+    document.getElementById('tr-icon').value = '';
+    document.getElementById('tr-title').value = '';
+    document.getElementById('tr-sub').value = '';
+    document.getElementById('tr-status').value = 'booked';
+  }
+  document.getElementById('transport-modal').classList.add('open');
+}
+
+function closeTransportModal() {
+  document.getElementById('transport-modal').classList.remove('open');
+}
+
+function handleTransportOverlayClick(e) {
+  if (e.target === document.getElementById('transport-modal')) closeTransportModal();
+}
+
+function saveTransport() {
+  const title = document.getElementById('tr-title').value.trim();
+  if (!title) { document.getElementById('tr-title').focus(); return; }
+  const entry = {
+    icon: document.getElementById('tr-icon').value.trim() || '🚌',
+    title,
+    sub: document.getElementById('tr-sub').value.trim(),
+    status: document.getElementById('tr-status').value,
+  };
+  if (editTransportId !== null) {
+    const idx = TRANSPORT_DATA.findIndex(x => x.id === editTransportId);
+    TRANSPORT_DATA[idx] = { id: editTransportId, ...entry };
+  } else {
+    const newId = TRANSPORT_DATA.length ? Math.max(...TRANSPORT_DATA.map(x => x.id)) + 1 : 1;
+    TRANSPORT_DATA.push({ id: newId, ...entry });
+  }
+  closeTransportModal();
+  renderTransportCard();
+}
+
+function deleteTransport(id) {
+  if (!confirm('Remove this transport entry?')) return;
+  TRANSPORT_DATA.splice(TRANSPORT_DATA.findIndex(x => x.id === id), 1);
+  renderTransportCard();
+}
+
+// ─── NOTES ────────────────────────────────────────────────────────────────
+
+const DAY_NOTES = {};
+const notesOpen = {};
+
+function toggleNotes(day) {
+  notesOpen[day] = !notesOpen[day];
+  renderDayDetail(day);
+}
+
+// ─── LIVE STATS + BOOKING CARD ────────────────────────────────────────────
+
+function findMatchingTask(place) {
+  const words = place.toLowerCase().split(/[\s\-·—+,()]+/).filter(w => w.length > 3);
+  return CHECKLIST_DATA.find(t => t.cat === 'urgent' && words.some(w => t.title.toLowerCase().includes(w)));
+}
+
+function bookStatusBadge(place) {
+  const t = findMatchingTask(place);
+  if (!t) return '';
+  return `<span class="task-status ${checkState[t.id] ? 'done' : 'pending'}">${checkState[t.id] ? '✓ Booked' : '○ Not booked yet'}</span>`;
+}
+
+function updateOverviewStats() {
+  let places = 0, bookNow = 0;
+  Object.values(DAYS).forEach(day => {
+    day.timeline.forEach(item => {
+      if (item.url) places++;
+      if (item.tags.includes('book')) {
+        const t = findMatchingTask(item.place);
+        if (!t || !checkState[t.id]) bookNow++;
+      }
+    });
+  });
+  const pe = document.getElementById('stat-places');
+  const be = document.getElementById('stat-book');
+  if (pe) pe.textContent = places;
+  if (be) be.textContent = bookNow;
+}
+
+function renderBookingCard() {
+  const container = document.getElementById('booking-list-dynamic');
+  if (!container) return;
+  const cityIcon = { seoul: '🏯', osaka: '⛩️', tokyo: '🗼' };
+  const items = [];
+  Object.entries(DAYS).forEach(([dn, day]) => {
+    day.timeline.forEach(item => {
+      if (item.tags.includes('book')) {
+        const t = findMatchingTask(item.place);
+        items.push({ item, day, dn: parseInt(dn), done: !!(t && checkState[t.id]) });
+      }
+    });
+  });
+  if (items.length === 0) {
+    container.innerHTML = '<div style="color:var(--green);font-size:13px;text-align:center;padding:8px 0;">✓ All bookings done!</div>';
+    return;
+  }
+  container.innerHTML = items.map(({ item, day, dn, done }) => `
+    <div class="booking-item">
+      <div class="booking-icon">${item.icon || cityIcon[day.city] || '📍'}</div>
+      <div class="booking-text">
+        <div class="booking-title">${item.place}</div>
+        <div class="booking-sub">Apr ${dn} · ${day.city.charAt(0).toUpperCase() + day.city.slice(1)}</div>
+      </div>
+      <div class="booking-badge ${done ? 'ok' : 'urgent'}">${done ? 'Done' : 'Book'}</div>
+    </div>
+  `).join('');
+}
+
+// ─── TASK MODAL ───────────────────────────────────────────────────────────
+
+let editTaskId = null;
+
+function openTaskModal(id) {
+  editTaskId = id;
+  const sel = document.getElementById('task-field-day');
+  sel.innerHTML = '<option value="">None</option>' +
+    Object.entries(DAYS).map(([d, day]) =>
+      `<option value="${d}">${day.title} · Apr ${d}</option>`
+    ).join('');
+
+  if (id !== null) {
+    const task = CHECKLIST_DATA.find(t => t.id === id);
+    document.getElementById('task-modal-title').textContent = 'Edit Task';
+    document.getElementById('task-field-title').value = task.title;
+    document.getElementById('task-field-sub').value = task.sub || '';
+    document.getElementById('task-field-cat').value = task.cat;
+    document.getElementById('task-field-city').value = task.city;
+    sel.value = task.day || '';
+  } else {
+    document.getElementById('task-modal-title').textContent = 'Add Task';
+    document.getElementById('task-field-title').value = '';
+    document.getElementById('task-field-sub').value = '';
+    document.getElementById('task-field-cat').value = 'urgent';
+    document.getElementById('task-field-city').value = 'all';
+    sel.value = '';
+  }
+  document.getElementById('task-modal').classList.add('open');
+}
+
+function closeTaskModal() {
+  document.getElementById('task-modal').classList.remove('open');
+}
+
+function handleTaskOverlayClick(e) {
+  if (e.target === document.getElementById('task-modal')) closeTaskModal();
+}
+
+function saveTask() {
+  const title = document.getElementById('task-field-title').value.trim();
+  if (!title) { document.getElementById('task-field-title').focus(); return; }
+  const dayVal = document.getElementById('task-field-day').value;
+
+  if (editTaskId !== null) {
+    const task = CHECKLIST_DATA.find(t => t.id === editTaskId);
+    task.title = title;
+    task.sub = document.getElementById('task-field-sub').value.trim();
+    task.cat = document.getElementById('task-field-cat').value;
+    task.city = document.getElementById('task-field-city').value;
+    task.day = dayVal ? parseInt(dayVal) : null;
+  } else {
+    const newId = Math.max(...CHECKLIST_DATA.map(t => t.id)) + 1;
+    CHECKLIST_DATA.push({
+      id: newId,
+      cat: document.getElementById('task-field-cat').value,
+      city: document.getElementById('task-field-city').value,
+      title,
+      sub: document.getElementById('task-field-sub').value.trim(),
+      done: false,
+      day: dayVal ? parseInt(dayVal) : null,
+    });
+    checkState[newId] = false;
+  }
+  closeTaskModal();
+  renderChecklist();
+  updateOverviewStats();
+  renderBookingCard();
+}
+
+function deleteTask(id) {
+  if (!confirm('Remove this task?')) return;
+  CHECKLIST_DATA.splice(CHECKLIST_DATA.findIndex(t => t.id === id), 1);
+  delete checkState[id];
+  renderChecklist();
+  updateOverviewStats();
+  renderBookingCard();
+}
+
+function jumpToDay(day) {
+  const calTab = document.querySelector('.tab[onclick*="calendar"]');
+  switchTab('calendar', calTab);
+  setTimeout(() => {
+    const el = document.querySelector(`.cal-day[data-date="${day}"]`);
+    if (el) el.click();
+  }, 50);
 }
 
 // ─── INIT ──────────────────────────────────────────────────────────────────
@@ -1241,6 +1722,10 @@ function deleteActivity(day, index) {
 document.getElementById('map-frame').src = MAP_URLS.all;
 renderChecklist();
 renderPlaceGrid('all');
+updateOverviewStats();
+renderBookingCard();
+renderTransportCard();
+renderAccommodationCard();
 
 // Auto-select April 17 on calendar tab open
 document.querySelector('.tab[onclick*="calendar"]').addEventListener('click', () => {
