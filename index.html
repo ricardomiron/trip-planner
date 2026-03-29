@@ -25,7 +25,7 @@
     --green: #4CAF7D;
     --r: 16px;
     --r-sm: 10px;
-    --tab-h: 68px;
+    --tab-h: 82px;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 
@@ -50,12 +50,12 @@
     background: rgba(15,14,12,0.92);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid var(--border);
-    padding-bottom: var(--safe-bottom);
+    padding-bottom: calc(var(--safe-bottom) + 8px);
     z-index: 100;
   }
   .tab {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 10px 0 8px; gap: 4px; cursor: pointer; transition: all .2s;
+    padding: 12px 0 10px; gap: 4px; cursor: pointer; transition: all .2s;
     border: none; background: none; color: var(--text3); font-family: inherit;
   }
   .tab .icon { font-size: 22px; line-height: 1; transition: transform .2s; }
@@ -404,6 +404,28 @@
   .place-card-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; line-height: 1.3; }
   .place-card-type { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .3px; font-weight: 500; }
 
+  /* ── ACTIVITY EDIT FORM ── */
+  .form-group { margin-bottom: 14px; }
+  .form-row { display: flex; gap: 10px; }
+  .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+  .form-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 10px 12px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; transition: border-color .15s; }
+  .form-input:focus { border-color: var(--gold); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-select { appearance: none; -webkit-appearance: none; cursor: pointer; }
+  .form-tags { display: flex; gap: 14px; }
+  .form-tag-opt { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: var(--text2); }
+  .form-tag-opt input { accent-color: var(--gold); width: 16px; height: 16px; }
+  .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-cancel { flex: 1; padding: 12px; border-radius: var(--r-sm); border: 1px solid var(--border); background: transparent; color: var(--text2); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .btn-save { flex: 2; padding: 12px; border-radius: var(--r-sm); border: none; background: var(--gold); color: #1a1400; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .tl-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .tl-btn { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text3); font-size: 11px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all .15s; }
+  .tl-btn.edit:active { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,.08); }
+  .tl-btn.delete:active { border-color: var(--seoul); color: var(--seoul); background: rgba(232,80,58,.08); }
+  .tl-map-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 11px; color: var(--gold); text-decoration: none; font-weight: 500; }
+  .add-activity-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - 32px); margin: 4px 16px 16px; padding: 12px; border-radius: var(--r-sm); border: 1px dashed var(--border); background: transparent; color: var(--text3); font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; }
+  .add-activity-btn:active { background: var(--surface2); color: var(--gold); border-color: var(--gold); }
+
 </style>
 </head>
 <body>
@@ -645,6 +667,77 @@
 
   <div class="section-heading" style="margin-top:8px;">Key spots</div>
   <div class="place-grid" id="place-grid"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     EDIT / ADD ACTIVITY MODAL
+════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="edit-modal" onclick="handleModalOverlayClick(event)">
+  <div class="modal" style="position:relative;">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeEditModal()">✕</button>
+    <div class="modal-title" id="edit-modal-title">Edit Activity</div>
+    <div class="modal-sub" id="edit-modal-sub"></div>
+
+    <div class="form-group">
+      <label class="form-label">Time Label</label>
+      <input class="form-input" id="field-time" type="text" placeholder="e.g. Morning — Cafe">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Place</label>
+      <input class="form-input" id="field-place" type="text" placeholder="e.g. Gyeongbokgung Palace">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-input form-textarea" id="field-desc" placeholder="Details about this activity..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes / Order (optional)</label>
+      <input class="form-input" id="field-order" type="text" placeholder="e.g. 🍽 What to order">
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Segment</label>
+        <select class="form-input form-select" id="field-seg">
+          <option value="morning">Morning</option>
+          <option value="afternoon">Afternoon</option>
+          <option value="evening">Evening</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Dot Color</label>
+        <select class="form-input form-select" id="field-dot">
+          <option value="morning">🟡 Gold (morning)</option>
+          <option value="afternoon">🔵 Blue (afternoon)</option>
+          <option value="evening">🟣 Purple (evening)</option>
+          <option value="tip">🟢 Green (tip)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tags</label>
+      <div class="form-tags">
+        <label class="form-tag-opt"><input type="checkbox" id="tag-book"> ⚠️ Book ahead</label>
+        <label class="form-tag-opt"><input type="checkbox" id="tag-eat"> 🍽 Eat here</label>
+      </div>
+    </div>
+    <div class="form-row" style="align-items:flex-end;">
+      <div class="form-group" style="flex:0 0 72px">
+        <label class="form-label">Icon</label>
+        <input class="form-input" id="field-icon" type="text" placeholder="📍" maxlength="2" style="text-align:center;font-size:20px;padding:7px 4px;">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Google Maps URL (optional)</label>
+        <input class="form-input" id="field-url" type="url" placeholder="https://maps.app.goo.gl/...">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-save" onclick="saveActivity()">Save</button>
+    </div>
+  </div>
 </div>
 
 
@@ -895,6 +988,11 @@ function renderDayDetail(d) {
         <div class="tl-tags">
           ${item.tags.map(t => `<span class="tl-tag ${t}">${t === 'book' ? '⚠️ Book ahead' : '🍽 Eat here'}</span>`).join('')}
         </div>
+        ${item.url ? `<a class="tl-map-link" href="${item.url}" target="_blank" rel="noopener">📍 Open in Maps</a>` : ''}
+        <div class="tl-actions">
+          <button class="tl-btn edit" onclick="openEditModal(${d},${i})">✏️ Edit</button>
+          <button class="tl-btn delete" onclick="deleteActivity(${d},${i})">🗑 Delete</button>
+        </div>
       </div>
     </div>
   `).join('');
@@ -915,6 +1013,7 @@ function renderDayDetail(d) {
       </div>
     </div>
     <div class="timeline">${tl}</div>
+    <button class="add-activity-btn" onclick="openEditModal(${d},null)">＋ Add activity</button>
   `;
   det.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -1014,10 +1113,33 @@ function showMapCity(el, city) {
 
 function renderPlaceGrid(filter) {
   const grid = document.getElementById('place-grid');
-  const filtered = filter === 'all' ? PLACES :
-    filter === 'hakone' ? PLACES.filter(p => p.name.includes('Owakudani') || p.name.includes('Hakone')) :
-    PLACES.filter(p => p.city === filter || (filter === 'osaka' && p.city === 'osaka'));
-  
+  const cityLabel = { seoul: '🇰🇷 Seoul', osaka: '🇯🇵 Osaka', tokyo: '🇯🇵 Tokyo' };
+
+  const places = [];
+  Object.values(DAYS).forEach(day => {
+    day.timeline.forEach(item => {
+      if (item.url) {
+        places.push({
+          icon: item.icon || '📍',
+          name: item.place,
+          type: cityLabel[day.city] || day.city,
+          city: day.city,
+          url: item.url,
+        });
+      }
+    });
+  });
+
+  const filtered = filter === 'all' ? places :
+    filter === 'hakone' ? places.filter(p =>
+      /hakone|owakudani|ashi|ropeway/i.test(p.name)) :
+    places.filter(p => p.city === filter);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--text3);padding:24px 0;font-size:13px;line-height:1.8;">No map links yet.<br>Edit an activity and paste<br>a Google Maps URL to add it here.</p>`;
+    return;
+  }
+
   grid.innerHTML = filtered.map(p => `
     <a class="place-card" href="${p.url}" target="_blank" rel="noopener">
       <div class="place-card-icon">${p.icon}</div>
@@ -1025,6 +1147,93 @@ function renderPlaceGrid(filter) {
       <div class="place-card-type">${p.type}</div>
     </a>
   `).join('');
+}
+
+// ─── EDIT / ADD / DELETE ACTIVITIES ───────────────────────────────────────
+
+let editModalDay = null;
+let editModalIndex = null;
+
+function openEditModal(day, index) {
+  editModalDay = day;
+  editModalIndex = index;
+
+  document.getElementById('edit-modal-sub').textContent = `April ${day} · ${DAYS[day].title}`;
+
+  if (index !== null) {
+    const item = DAYS[day].timeline[index];
+    document.getElementById('edit-modal-title').textContent = 'Edit Activity';
+    document.getElementById('field-time').value = item.time;
+    document.getElementById('field-place').value = item.place;
+    document.getElementById('field-desc').value = item.desc;
+    document.getElementById('field-order').value = item.order || '';
+    document.getElementById('field-seg').value = item.seg;
+    document.getElementById('field-dot').value = item.dot;
+    document.getElementById('tag-book').checked = item.tags.includes('book');
+    document.getElementById('tag-eat').checked = item.tags.includes('eat');
+    document.getElementById('field-icon').value = item.icon || '';
+    document.getElementById('field-url').value = item.url || '';
+  } else {
+    document.getElementById('edit-modal-title').textContent = 'Add Activity';
+    document.getElementById('field-time').value = '';
+    document.getElementById('field-place').value = '';
+    document.getElementById('field-desc').value = '';
+    document.getElementById('field-order').value = '';
+    document.getElementById('field-seg').value = 'morning';
+    document.getElementById('field-dot').value = 'morning';
+    document.getElementById('tag-book').checked = false;
+    document.getElementById('tag-eat').checked = false;
+    document.getElementById('field-icon').value = '';
+    document.getElementById('field-url').value = '';
+  }
+
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+}
+
+function handleModalOverlayClick(e) {
+  if (e.target === document.getElementById('edit-modal')) closeEditModal();
+}
+
+function saveActivity() {
+  const place = document.getElementById('field-place').value.trim();
+  if (!place) {
+    document.getElementById('field-place').focus();
+    return;
+  }
+  const tags = [];
+  if (document.getElementById('tag-book').checked) tags.push('book');
+  if (document.getElementById('tag-eat').checked) tags.push('eat');
+
+  const item = {
+    seg: document.getElementById('field-seg').value,
+    dot: document.getElementById('field-dot').value,
+    time: document.getElementById('field-time').value.trim(),
+    place,
+    desc: document.getElementById('field-desc').value.trim(),
+    order: document.getElementById('field-order').value.trim(),
+    tags,
+    icon: document.getElementById('field-icon').value.trim(),
+    url: document.getElementById('field-url').value.trim(),
+  };
+
+  if (editModalIndex !== null) {
+    DAYS[editModalDay].timeline[editModalIndex] = item;
+  } else {
+    DAYS[editModalDay].timeline.push(item);
+  }
+
+  closeEditModal();
+  renderDayDetail(editModalDay);
+}
+
+function deleteActivity(day, index) {
+  if (!confirm('Remove this activity?')) return;
+  DAYS[day].timeline.splice(index, 1);
+  renderDayDetail(day);
 }
 
 // ─── INIT ──────────────────────────────────────────────────────────────────
