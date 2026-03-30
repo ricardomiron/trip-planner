@@ -1,7 +1,7 @@
 // ─── Asia Trip Planner — Service Worker ───────────────────────────────────
 // Strategy: cache-first for same-origin assets, stale-while-revalidate for fonts
 
-const CACHE = 'asia-trip-v1';
+const CACHE = 'asia-trip-v2';
 const PRECACHE = ['./', './index.html', './manifest.json', './icon.svg'];
 
 // ── Install: pre-cache app shell ──────────────────────────────────────────
