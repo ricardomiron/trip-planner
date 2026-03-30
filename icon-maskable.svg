@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Full bleed background for maskable icon (safe zone is inner 80%) -->
+  <rect width="512" height="512" fill="#0F0E0C"/>
+  <defs>
+    <radialGradient id="mg" cx="40%" cy="35%">
+      <stop offset="0%" stop-color="#1e1a14"/>
+      <stop offset="100%" stop-color="#0F0E0C"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#mg)"/>
+  <text x="256" y="318" text-anchor="middle" font-size="200" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif">🌏</text>
+</svg>
