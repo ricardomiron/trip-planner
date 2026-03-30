@@ -6,6 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Asia Trip">
+<meta name="theme-color" content="#0F0E0C">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon.svg">
 <title>🌏 Asia Trip — Apr 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -46,7 +50,7 @@
   .tabs {
     position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
     width: 100%; max-width: 430px;
-    display: grid; grid-template-columns: repeat(4,1fr);
+    display: grid; grid-template-columns: repeat(5,1fr);
     background: rgba(15,14,12,0.92);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid var(--border);
@@ -445,18 +449,83 @@
   .notes-has-content { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); display: inline-block; margin-left: 6px; vertical-align: middle; flex-shrink: 0; }
   .notes-area { display: block; width: 100%; background: var(--surface2); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--r-sm) var(--r-sm); padding: 12px 14px; color: var(--text); font-family: inherit; font-size: 13px; line-height: 1.5; resize: none; min-height: 80px; outline: none; }
   .notes-area:focus { border-color: var(--gold); }
+  .data-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; color: var(--text2); font-size: 11px; font-weight: 500; cursor: pointer; font-family: inherit; white-space: nowrap; }
+  .data-btn:active { background: var(--surface3); }
+  .app-toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; z-index: 400; pointer-events: none; transition: opacity .3s; opacity: 0; white-space: nowrap; }
+
+  /* ── REORDER ── */
+  .tl-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+  .tl-btn.move { min-width: 30px; padding: 4px 7px; }
+
+  /* ── COUNTDOWN ── */
+  .countdown-strip { margin: 0 16px 16px; background: linear-gradient(135deg, rgba(201,168,76,.1), rgba(201,168,76,.03)); border: 1px solid rgba(201,168,76,.18); border-radius: var(--r); padding: 16px 20px; display:flex; align-items:center; justify-content:space-between; }
+  .countdown-num { font-family:'Playfair Display',serif; font-size:44px; font-weight:700; color:var(--gold); line-height:1; }
+  .countdown-unit { font-size:11px; color:var(--text3); margin-top:4px; text-transform:uppercase; letter-spacing:.5px; font-weight:500; }
+  .countdown-right { text-align:right; }
+  .countdown-label { font-size:14px; font-weight:600; }
+  .countdown-date { font-size:12px; color:var(--text3); margin-top:3px; }
+  .countdown-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; margin-top:8px; }
+
+  /* ── BUDGET ── */
+  .budget-summary { display:flex; align-items:flex-end; justify-content:space-between; padding-bottom:10px; }
+  .budget-total-num { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; }
+  .budget-total-label { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
+  .budget-planned-num { font-size:18px; font-weight:600; color:var(--text2); }
+  .budget-planned-label { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.4px; margin-top:2px; text-align:right; }
+  .budget-bar-track { height:5px; background:var(--surface3); border-radius:3px; overflow:hidden; margin-bottom:14px; }
+  .budget-bar-fill { height:100%; border-radius:3px; transition:width .4s; }
+  .budget-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--border); }
+  .budget-row-icon { font-size:16px; width:22px; text-align:center; flex-shrink:0; }
+  .budget-row-info { flex:1; min-width:0; }
+  .budget-row-label { font-size:13px; font-weight:500; }
+  .budget-row-amounts { font-size:11px; color:var(--text3); margin-top:1px; }
+  .budget-row-actual { font-size:13px; font-weight:600; flex-shrink:0; min-width:52px; text-align:right; }
+  .budget-row-actions { display:flex; gap:4px; flex-shrink:0; }
+  .budget-empty { color:var(--text3); font-size:13px; text-align:center; padding:8px 0; }
+
+  /* ── SEARCH ── */
+  .search-overlay { position:fixed; inset:0; z-index:300; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1); overflow:hidden; }
+  .search-overlay.open { transform:translateY(0); }
+  .search-header { padding:calc(env(safe-area-inset-top,0px) + 52px) 16px 12px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .search-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:10px 16px; color:var(--text); font-family:inherit; font-size:15px; outline:none; }
+  .search-input:focus { border-color:var(--gold); }
+  .search-cancel { background:none; border:none; color:var(--text2); font-size:14px; cursor:pointer; padding:4px 0; font-family:inherit; white-space:nowrap; flex-shrink:0; }
+  .search-results { flex:1; overflow-y:auto; padding-bottom:calc(var(--safe-bottom,0px) + 20px); }
+  .search-section-title { font-size:11px; color:var(--text3); font-weight:600; letter-spacing:.6px; text-transform:uppercase; padding:14px 16px 6px; }
+  .search-result-item { padding:10px 16px; display:flex; align-items:flex-start; gap:12px; cursor:pointer; }
+  .search-result-item:active { background:var(--surface); }
+  .search-result-icon { font-size:18px; width:28px; text-align:center; flex-shrink:0; padding-top:1px; }
+  .search-result-body { flex:1; min-width:0; }
+  .search-result-title { font-size:13px; font-weight:500; }
+  .search-result-sub { font-size:11px; color:var(--text3); margin-top:2px; line-height:1.4; }
+  .search-empty { text-align:center; color:var(--text3); font-size:14px; padding:60px 20px; line-height:1.8; }
+
+  /* ── OFFLINE BAR ── */
+  .offline-bar { display:none; position:fixed; top:0; left:0; right:0; z-index:500; background:#1c1a18; border-bottom:1px solid rgba(255,255,255,.08); padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 8px; text-align:center; font-size:12px; color:var(--text3); font-family:inherit; }
+  .offline-bar.visible { display:block; }
+  .offline-bar.back-online { color:var(--green); }
 
 </style>
 </head>
 <body>
 
+<!-- Offline indicator bar -->
+<div class="offline-bar" id="offline-bar">📡 You're offline — app is running from cache</div>
+
 <!-- ══════════════════════════════════════════════
      SCREEN 1: OVERVIEW
 ════════════════════════════════════════════════ -->
 <div class="screen active" id="screen-overview">
-  <div class="app-header">
-    <h1>Your Asia Trip</h1>
-    <div class="subtitle">April 17 – 26, 2026 · 10 days</div>
+  <div class="app-header" style="display:flex;align-items:flex-start;justify-content:space-between;">
+    <div>
+      <h1>Your Asia Trip</h1>
+      <div class="subtitle">April 17 – 26, 2026 · 10 days</div>
+    </div>
+    <div style="display:flex;gap:6px;padding-top:4px;flex-wrap:wrap;justify-content:flex-end;">
+      <button class="data-btn" id="install-btn" onclick="promptInstall()" style="display:none;align-items:center;gap:4px;">📲 Install</button>
+      <button class="data-btn" onclick="importData()">⬆ Import</button>
+      <button class="data-btn" onclick="exportData()">⬇ Export</button>
+    </div>
   </div>
 
   <div class="hero">
@@ -468,6 +537,8 @@
       <span class="city-pill tokyo"><span class="dot"></span>Tokyo 3N</span>
     </div>
   </div>
+
+  <div class="countdown-strip" id="countdown-strip"></div>
 
   <div class="trip-bar">
     <div class="trip-seg s">
@@ -523,6 +594,14 @@
       <button onclick="openAccommodationModal(null)" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;">＋ Add</button>
     </div>
     <div class="booking-list" id="accommodation-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">💰 Budget</div>
+      <button onclick="openBudgetModal(null)" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;">＋ Add</button>
+    </div>
+    <div id="budget-card-content"></div>
   </div>
 </div>
 
@@ -865,6 +944,60 @@
 
 
 <!-- ══════════════════════════════════════════════
+     BUDGET MODAL
+════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="budget-modal" onclick="handleBudgetOverlayClick(event)">
+  <div class="modal" style="position:relative;">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeBudgetModal()">✕</button>
+    <div class="modal-title" id="budget-modal-title">Add Budget Item</div>
+    <div class="form-row" style="align-items:flex-end;">
+      <div class="form-group" style="flex:0 0 72px">
+        <label class="form-label">Icon</label>
+        <input class="form-input" id="bud-icon" type="text" placeholder="✈️" maxlength="2" style="text-align:center;font-size:20px;padding:7px 4px;">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Label</label>
+        <input class="form-input" id="bud-label" type="text" placeholder="e.g. Flights, Food, Hotels">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Planned ($)</label>
+        <input class="form-input" id="bud-planned" type="number" min="0" step="0.01" placeholder="0">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">Actual ($)</label>
+        <input class="form-input" id="bud-actual" type="number" min="0" step="0.01" placeholder="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes (optional)</label>
+      <input class="form-input" id="bud-note" type="text" placeholder="e.g. Booking ref, breakdown...">
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeBudgetModal()">Cancel</button>
+      <button class="btn-save" onclick="saveBudgetItem()">Save</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SEARCH OVERLAY
+════════════════════════════════════════════════ -->
+<div class="search-overlay" id="search-overlay">
+  <div class="search-header">
+    <input class="search-input" id="search-input" type="search" placeholder="Search places, tasks, transport..." oninput="runSearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="search-cancel" onclick="closeSearch()">Cancel</button>
+  </div>
+  <div class="search-results" id="search-results">
+    <div class="search-empty">Type to search across your entire trip</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
      BOTTOM TABS
 ════════════════════════════════════════════════ -->
 <nav class="tabs">
@@ -883,6 +1016,10 @@
   <button class="tab" onclick="switchTab('map',this)">
     <span class="icon">📍</span>
     <span class="label">Map</span>
+  </button>
+  <button class="tab" onclick="openSearch()">
+    <span class="icon">🔍</span>
+    <span class="label">Search</span>
   </button>
 </nav>
 
@@ -1114,6 +1251,8 @@ function renderDayDetail(d) {
         ${item.tags.includes('book') ? bookStatusBadge(item.place) : ''}
         ${item.url ? `<a class="tl-map-link" href="${item.url}" target="_blank" rel="noopener">📍 Open in Maps</a>` : ''}
         <div class="tl-actions">
+          <button class="tl-btn move" onclick="moveActivityUp(${d},${i})" ${i===0?'disabled':''}>↑</button>
+          <button class="tl-btn move" onclick="moveActivityDown(${d},${i})" ${i===day.timeline.length-1?'disabled':''}>↓</button>
           <button class="tl-btn edit" onclick="openEditModal(${d},${i})">✏️ Edit</button>
           <button class="tl-btn delete" onclick="deleteActivity(${d},${i})">🗑 Delete</button>
         </div>
@@ -1143,7 +1282,7 @@ function renderDayDetail(d) {
         <span>📝 Notes${DAY_NOTES[d] ? '<span class="notes-has-content"></span>' : ''}</span>
         <span>${notesOpen[d] ? '▾' : '▸'}</span>
       </button>
-      ${notesOpen[d] ? `<textarea class="notes-area" placeholder="Confirmation numbers, thoughts, what you actually did..." oninput="DAY_NOTES[${d}]=this.value">${(DAY_NOTES[d]||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>` : ''}
+      ${notesOpen[d] ? `<textarea class="notes-area" placeholder="Confirmation numbers, thoughts, what you actually did..." oninput="DAY_NOTES[${d}]=this.value;saveToStorage()">${(DAY_NOTES[d]||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>` : ''}
     </div>
   `;
   det.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1227,6 +1366,7 @@ function toggleCheck(id) {
   renderChecklist();
   updateOverviewStats();
   renderBookingCard();
+  saveToStorage();
 }
 
 function updateProgress() {
@@ -1377,6 +1517,7 @@ function saveActivity() {
   updateOverviewStats();
   renderBookingCard();
   renderPlaceGrid(currentMapCity);
+  saveToStorage();
 }
 
 function deleteActivity(day, index) {
@@ -1386,6 +1527,7 @@ function deleteActivity(day, index) {
   updateOverviewStats();
   renderBookingCard();
   renderPlaceGrid(currentMapCity);
+  saveToStorage();
 }
 
 // ─── ACCOMMODATION ────────────────────────────────────────────────────────
@@ -1468,12 +1610,14 @@ function saveAccommodation() {
   }
   closeAccommodationModal();
   renderAccommodationCard();
+  saveToStorage();
 }
 
 function deleteAccommodation(id) {
   if (!confirm('Remove this accommodation?')) return;
   ACCOMMODATION_DATA.splice(ACCOMMODATION_DATA.findIndex(x => x.id === id), 1);
   renderAccommodationCard();
+  saveToStorage();
 }
 
 // ─── TRANSPORT ────────────────────────────────────────────────────────────
@@ -1552,12 +1696,14 @@ function saveTransport() {
   }
   closeTransportModal();
   renderTransportCard();
+  saveToStorage();
 }
 
 function deleteTransport(id) {
   if (!confirm('Remove this transport entry?')) return;
   TRANSPORT_DATA.splice(TRANSPORT_DATA.findIndex(x => x.id === id), 1);
   renderTransportCard();
+  saveToStorage();
 }
 
 // ─── NOTES ────────────────────────────────────────────────────────────────
@@ -1697,6 +1843,7 @@ function saveTask() {
   renderChecklist();
   updateOverviewStats();
   renderBookingCard();
+  saveToStorage();
 }
 
 function deleteTask(id) {
@@ -1706,6 +1853,7 @@ function deleteTask(id) {
   renderChecklist();
   updateOverviewStats();
   renderBookingCard();
+  saveToStorage();
 }
 
 function jumpToDay(day) {
@@ -1717,15 +1865,365 @@ function jumpToDay(day) {
   }, 50);
 }
 
+// ─── REORDER ACTIVITIES ────────────────────────────────────────────────────
+
+function moveActivityUp(day, index) {
+  if (index === 0) return;
+  const tl = DAYS[day].timeline;
+  [tl[index - 1], tl[index]] = [tl[index], tl[index - 1]];
+  renderDayDetail(day);
+  saveToStorage();
+}
+
+function moveActivityDown(day, index) {
+  const tl = DAYS[day].timeline;
+  if (index === tl.length - 1) return;
+  [tl[index], tl[index + 1]] = [tl[index + 1], tl[index]];
+  renderDayDetail(day);
+  saveToStorage();
+}
+
+// ─── COUNTDOWN ─────────────────────────────────────────────────────────────
+
+function renderCountdown() {
+  const el = document.getElementById('countdown-strip');
+  if (!el) return;
+  const departure = new Date(2026, 3, 17); // April 17 2026
+  const tripEnd   = new Date(2026, 3, 26); // April 26 2026
+  const today     = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.round((departure - today) / 86400000);
+  const diffEnd = Math.round((tripEnd - today) / 86400000);
+
+  if (diff > 0) {
+    const color = diff <= 14 ? 'var(--seoul)' : 'var(--gold)';
+    const bg    = diff <= 14 ? 'rgba(232,80,58,.15)' : 'rgba(201,168,76,.15)';
+    el.innerHTML = `
+      <div>
+        <div class="countdown-num" style="color:${color}">${diff}</div>
+        <div class="countdown-unit">days to go</div>
+      </div>
+      <div class="countdown-right">
+        <div class="countdown-label">Trip starts soon!</div>
+        <div class="countdown-date">Apr 17 – 26, 2026</div>
+        <span class="countdown-badge" style="background:${bg};color:${color}">✈️ Departs Apr 17</span>
+      </div>`;
+  } else if (diff > -10) {
+    const dayNum = 1 + Math.abs(diff);
+    el.innerHTML = `
+      <div>
+        <div class="countdown-num" style="color:var(--green)">${dayNum}</div>
+        <div class="countdown-unit">day of trip</div>
+      </div>
+      <div class="countdown-right">
+        <div class="countdown-label">You're on your trip!</div>
+        <div class="countdown-date">Apr 17 – 26, 2026</div>
+        <span class="countdown-badge" style="background:rgba(76,175,125,.15);color:var(--green)">🌏 Trip in progress</span>
+      </div>`;
+  } else {
+    const ago = Math.abs(diffEnd);
+    el.innerHTML = `
+      <div>
+        <div class="countdown-num" style="color:var(--text3)">${ago}</div>
+        <div class="countdown-unit">days ago</div>
+      </div>
+      <div class="countdown-right">
+        <div class="countdown-label">Trip completed</div>
+        <div class="countdown-date">Apr 17 – 26, 2026</div>
+        <span class="countdown-badge" style="background:rgba(255,255,255,.06);color:var(--text3)">✓ Done</span>
+      </div>`;
+  }
+}
+
+// ─── BUDGET ────────────────────────────────────────────────────────────────
+
+const BUDGET_DATA = [];
+
+function renderBudgetCard() {
+  const el = document.getElementById('budget-card-content');
+  if (!el) return;
+  if (!BUDGET_DATA.length) {
+    el.innerHTML = '<div class="budget-empty">No budget items yet. Tap ＋ Add to start tracking.</div>';
+    return;
+  }
+  const totalPlanned = BUDGET_DATA.reduce((s, x) => s + (parseFloat(x.planned) || 0), 0);
+  const totalActual  = BUDGET_DATA.reduce((s, x) => s + (parseFloat(x.actual)  || 0), 0);
+  const pct   = totalPlanned > 0 ? Math.min((totalActual / totalPlanned) * 100, 100) : 0;
+  const over  = totalActual > totalPlanned && totalPlanned > 0;
+  const barColor = over ? 'var(--seoul)' : 'var(--green)';
+  const fmt = n => '$' + (parseFloat(n)||0).toFixed(0);
+
+  const rows = BUDGET_DATA.map(b => {
+    const act = parseFloat(b.actual) || 0;
+    const pln = parseFloat(b.planned) || 0;
+    const actColor = act > pln && pln > 0 ? 'color:var(--seoul)' : act > 0 ? 'color:var(--green)' : '';
+    return `
+      <div class="budget-row">
+        <div class="budget-row-icon">${b.icon || '💰'}</div>
+        <div class="budget-row-info">
+          <div class="budget-row-label">${b.label}</div>
+          <div class="budget-row-amounts">${b.note ? b.note + ' · ' : ''}Planned ${fmt(b.planned)}</div>
+        </div>
+        <div class="budget-row-actual" style="${actColor}">${fmt(b.actual)}</div>
+        <div class="budget-row-actions">
+          <button class="check-action-btn" onclick="openBudgetModal(${b.id})">✏️</button>
+          <button class="check-action-btn" onclick="deleteBudgetItem(${b.id})">🗑</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="budget-summary">
+      <div>
+        <div class="budget-total-num" style="color:${barColor}">${fmt(totalActual)}</div>
+        <div class="budget-total-label">Spent</div>
+      </div>
+      <div style="text-align:right">
+        <div class="budget-planned-num">${fmt(totalPlanned)}</div>
+        <div class="budget-planned-label">Budget</div>
+      </div>
+    </div>
+    <div class="budget-bar-track"><div class="budget-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+    ${rows}`;
+}
+
+let editBudgetId = null;
+
+function openBudgetModal(id) {
+  editBudgetId = id;
+  if (id !== null) {
+    const b = BUDGET_DATA.find(x => x.id === id);
+    document.getElementById('budget-modal-title').textContent = 'Edit Budget Item';
+    document.getElementById('bud-icon').value    = b.icon;
+    document.getElementById('bud-label').value   = b.label;
+    document.getElementById('bud-planned').value = b.planned;
+    document.getElementById('bud-actual').value  = b.actual;
+    document.getElementById('bud-note').value    = b.note;
+  } else {
+    document.getElementById('budget-modal-title').textContent = 'Add Budget Item';
+    document.getElementById('bud-icon').value    = '';
+    document.getElementById('bud-label').value   = '';
+    document.getElementById('bud-planned').value = '';
+    document.getElementById('bud-actual').value  = '';
+    document.getElementById('bud-note').value    = '';
+  }
+  document.getElementById('budget-modal').classList.add('open');
+}
+
+function closeBudgetModal() {
+  document.getElementById('budget-modal').classList.remove('open');
+}
+
+function handleBudgetOverlayClick(e) {
+  if (e.target === document.getElementById('budget-modal')) closeBudgetModal();
+}
+
+function saveBudgetItem() {
+  const label = document.getElementById('bud-label').value.trim();
+  if (!label) { document.getElementById('bud-label').focus(); return; }
+  const entry = {
+    icon:    document.getElementById('bud-icon').value.trim() || '💰',
+    label,
+    planned: parseFloat(document.getElementById('bud-planned').value) || 0,
+    actual:  parseFloat(document.getElementById('bud-actual').value)  || 0,
+    note:    document.getElementById('bud-note').value.trim(),
+  };
+  if (editBudgetId !== null) {
+    const idx = BUDGET_DATA.findIndex(x => x.id === editBudgetId);
+    BUDGET_DATA[idx] = { id: editBudgetId, ...entry };
+  } else {
+    const newId = BUDGET_DATA.length ? Math.max(...BUDGET_DATA.map(x => x.id)) + 1 : 1;
+    BUDGET_DATA.push({ id: newId, ...entry });
+  }
+  closeBudgetModal();
+  renderBudgetCard();
+  saveToStorage();
+}
+
+function deleteBudgetItem(id) {
+  if (!confirm('Remove this budget item?')) return;
+  BUDGET_DATA.splice(BUDGET_DATA.findIndex(x => x.id === id), 1);
+  renderBudgetCard();
+  saveToStorage();
+}
+
+// ─── SEARCH ────────────────────────────────────────────────────────────────
+
+function openSearch() {
+  document.getElementById('search-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('search-input').focus(), 300);
+}
+
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('open');
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-results').innerHTML = '<div class="search-empty">Type to search across your entire trip</div>';
+}
+
+function runSearch(q) {
+  q = q.trim().toLowerCase();
+  const el = document.getElementById('search-results');
+  if (!q) { el.innerHTML = '<div class="search-empty">Type to search across your entire trip</div>'; return; }
+
+  const sections = [];
+
+  // Activities
+  const actHits = [];
+  Object.entries(DAYS).forEach(([dayNum, day]) => {
+    day.timeline.forEach((item, idx) => {
+      if ((item.place + ' ' + item.desc + ' ' + (item.time||'')).toLowerCase().includes(q)) {
+        actHits.push({ icon: item.icon || '📍', title: item.place, sub: `Apr ${dayNum} · ${item.time || day.title}`, action: `closeSearch();jumpToDay(${dayNum})` });
+      }
+    });
+  });
+  if (actHits.length) sections.push({ title: '📅 Activities', items: actHits });
+
+  // Tasks
+  const taskHits = CHECKLIST_DATA.filter(t => (t.title + ' ' + t.sub).toLowerCase().includes(q)).map(t => ({
+    icon: t.cat === 'urgent' ? '⚠️' : t.cat === 'gear' ? '🎒' : '✅',
+    title: t.title, sub: t.sub,
+    action: `closeSearch();switchTab('checklist',document.querySelector('.tab[onclick*=\\'checklist\\']'))`
+  }));
+  if (taskHits.length) sections.push({ title: '✅ Tasks', items: taskHits });
+
+  // Transport
+  const trHits = TRANSPORT_DATA.filter(t => (t.title + ' ' + t.sub).toLowerCase().includes(q)).map(t => ({
+    icon: t.icon || '🚄', title: t.title, sub: t.sub,
+    action: `closeSearch();switchTab('overview',document.querySelector('.tab[onclick*=\\'overview\\']'))`
+  }));
+  if (trHits.length) sections.push({ title: '🚄 Transport', items: trHits });
+
+  // Accommodation
+  const acHits = ACCOMMODATION_DATA.filter(a => (a.name + ' ' + (a.sub||'')).toLowerCase().includes(q)).map(a => ({
+    icon: a.icon || '🏨', title: a.name, sub: `${a.checkin} – ${a.checkout}${a.sub ? ' · ' + a.sub : ''}`,
+    action: `closeSearch();switchTab('overview',document.querySelector('.tab[onclick*=\\'overview\\']'))`
+  }));
+  if (acHits.length) sections.push({ title: '🏨 Accommodation', items: acHits });
+
+  if (!sections.length) { el.innerHTML = `<div class="search-empty">No results for "<strong>${q}</strong>"<br><span style="font-size:12px">Try a place name, city, or keyword</span></div>`; return; }
+
+  el.innerHTML = sections.map(sec => `
+    <div class="search-section-title">${sec.title}</div>
+    ${sec.items.map(item => `
+      <div class="search-result-item" onclick="${item.action}">
+        <div class="search-result-icon">${item.icon}</div>
+        <div class="search-result-body">
+          <div class="search-result-title">${item.title}</div>
+          <div class="search-result-sub">${item.sub || ''}</div>
+        </div>
+      </div>`).join('')}
+  `).join('');
+}
+
+// ─── PERSISTENCE ──────────────────────────────────────────────────────────
+
+const STORAGE_KEY = 'asia-trip-planner';
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      days: DAYS, checklist: CHECKLIST_DATA, checkState,
+      transport: TRANSPORT_DATA, accommodation: ACCOMMODATION_DATA, notes: DAY_NOTES,
+      budget: BUDGET_DATA,
+    }));
+  } catch(e) {}
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.days) { Object.keys(DAYS).forEach(k => delete DAYS[k]); Object.assign(DAYS, data.days); }
+    if (data.checklist) { CHECKLIST_DATA.length = 0; CHECKLIST_DATA.push(...data.checklist); }
+    if (data.checkState) { Object.keys(checkState).forEach(k => delete checkState[k]); Object.assign(checkState, data.checkState); }
+    if (data.transport) { TRANSPORT_DATA.length = 0; TRANSPORT_DATA.push(...data.transport); }
+    if (data.accommodation) { ACCOMMODATION_DATA.length = 0; ACCOMMODATION_DATA.push(...data.accommodation); }
+    if (data.notes) Object.assign(DAY_NOTES, data.notes);
+    if (data.budget) { BUDGET_DATA.length = 0; BUDGET_DATA.push(...data.budget); }
+  } catch(e) {}
+}
+
+function renderAll() {
+  renderChecklist();
+  renderPlaceGrid(currentMapCity);
+  updateOverviewStats();
+  renderBookingCard();
+  renderTransportCard();
+  renderAccommodationCard();
+  renderBudgetCard();
+  renderCountdown();
+  if (selectedDate && DAYS[selectedDate]) renderDayDetail(selectedDate);
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify({ days: DAYS, checklist: CHECKLIST_DATA, checkState, transport: TRANSPORT_DATA, accommodation: ACCOMMODATION_DATA, notes: DAY_NOTES }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'asia-trip-data.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Data exported ✓');
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = evt => {
+      try {
+        const d = JSON.parse(evt.target.result);
+        const days = d.days || d.DAYS;
+        const checklist = d.checklist || d.CHECKLIST_DATA;
+        const transport = d.transport || d.TRANSPORT_DATA;
+        const accommodation = d.accommodation || d.ACCOMMODATION_DATA;
+        const notes = d.notes || d.DAY_NOTES;
+        const budget = d.budget || d.BUDGET_DATA;
+        if (!days && !checklist && !transport && !accommodation) { showToast('Unrecognised file format', true); return; }
+        if (!confirm('This will replace all current data. Continue?')) return;
+        if (days) { Object.keys(DAYS).forEach(k => delete DAYS[k]); Object.assign(DAYS, days); }
+        if (checklist) { CHECKLIST_DATA.length = 0; CHECKLIST_DATA.push(...checklist); Object.keys(checkState).forEach(k => delete checkState[k]); checklist.forEach(item => { checkState[item.id] = item.done || false; }); }
+        if (d.checkState) Object.assign(checkState, d.checkState);
+        if (transport) { TRANSPORT_DATA.length = 0; TRANSPORT_DATA.push(...transport); }
+        if (accommodation) { ACCOMMODATION_DATA.length = 0; ACCOMMODATION_DATA.push(...accommodation); }
+        if (notes) Object.assign(DAY_NOTES, notes);
+        if (budget) { BUDGET_DATA.length = 0; BUDGET_DATA.push(...budget); }
+        saveToStorage();
+        renderAll();
+        showToast('Data imported successfully ✓');
+      } catch(e) { showToast('Invalid JSON file', true); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('app-toast');
+  toast.textContent = msg;
+  toast.style.background = isError ? 'var(--seoul)' : 'var(--green)';
+  toast.style.color = 'white';
+  toast.style.opacity = '1';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+}
+
 // ─── INIT ──────────────────────────────────────────────────────────────────
 
+loadFromStorage();
 document.getElementById('map-frame').src = MAP_URLS.all;
+renderCountdown();
 renderChecklist();
 renderPlaceGrid('all');
 updateOverviewStats();
 renderBookingCard();
 renderTransportCard();
 renderAccommodationCard();
+renderBudgetCard();
 
 // Auto-select April 17 on calendar tab open
 document.querySelector('.tab[onclick*="calendar"]').addEventListener('click', () => {
@@ -1735,6 +2233,59 @@ document.querySelector('.tab[onclick*="calendar"]').addEventListener('click', ()
   }
 });
 
+// ─── PWA / SERVICE WORKER ──────────────────────────────────────────────────
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
+
+// ── Offline indicator ─────────────────────────────────────────────────────
+let _onlineTimer = null;
+function updateOnlineStatus() {
+  const bar = document.getElementById('offline-bar');
+  if (!bar) return;
+  clearTimeout(_onlineTimer);
+  if (!navigator.onLine) {
+    bar.textContent = '📡 You\'re offline — app is running from cache';
+    bar.className = 'offline-bar visible';
+  } else {
+    bar.textContent = '✓ Back online';
+    bar.className = 'offline-bar visible back-online';
+    _onlineTimer = setTimeout(() => { bar.classList.remove('visible'); }, 2500);
+  }
+}
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// ── PWA install prompt (Android/Chrome) ───────────────────────────────────
+let _installPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _installPrompt = e;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  _installPrompt = null;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'none';
+  showToast('App installed ✓');
+});
+function promptInstall() {
+  if (!_installPrompt) return;
+  _installPrompt.prompt();
+  _installPrompt.userChoice.then(result => {
+    _installPrompt = null;
+    if (result.outcome === 'accepted') showToast('Installing... ✓');
+    document.getElementById('install-btn').style.display = 'none';
+  });
+}
+
 </script>
+<div id="app-toast" class="app-toast"></div>
 </body>
 </html>

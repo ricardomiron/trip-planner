@@ -1,0 +1,38 @@
+{
+  "name": "Asia Trip Planner",
+  "short_name": "Asia Trip",
+  "description": "Seoul → Osaka → Tokyo · April 2026 · Interactive trip planner",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0F0E0C",
+  "theme_color": "#0F0E0C",
+  "categories": ["travel", "productivity"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Days Calendar",
+      "url": "./#calendar",
+      "description": "Open daily itinerary"
+    },
+    {
+      "name": "Checklist",
+      "url": "./#checklist",
+      "description": "View pre-trip tasks"
+    }
+  ]
+}
