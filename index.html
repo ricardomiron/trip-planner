@@ -341,12 +341,6 @@
   }
 
   /* ── SCROLL HINT ── */
-  .scroll-fade {
-    position: sticky; bottom: calc(var(--tab-h) + var(--safe-bottom));
-    height: 40px; background: linear-gradient(0deg, var(--bg), transparent);
-    pointer-events: none; margin-top: -40px;
-  }
-
   /* ── ANIMATIONS ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
@@ -1583,7 +1577,7 @@ function saveActivity() {
 
   if (item.tags.includes('book') && !findMatchingTask(item.place)) {
     showConfirm(`Create a checklist task to book "${item.place}"?`, () => {
-      const newId = Math.max(...CHECKLIST_DATA.map(t => t.id)) + 1;
+      const newId = (CHECKLIST_DATA.length ? Math.max(...CHECKLIST_DATA.map(t => t.id)) : 0) + 1;
       CHECKLIST_DATA.push({ id: newId, cat: 'urgent', city: DAYS[editModalDay].city, title: `Book ${item.place}`, sub: '', done: false, day: editModalDay });
       checkState[newId] = false;
       renderChecklist(); updateOverviewStats(); renderBookingCard(); saveToStorage();
@@ -1909,7 +1903,7 @@ function saveTask() {
     task.city = document.getElementById('task-field-city').value;
     task.day = dayVal ? parseInt(dayVal) : null;
   } else {
-    const newId = Math.max(...CHECKLIST_DATA.map(t => t.id)) + 1;
+    const newId = (CHECKLIST_DATA.length ? Math.max(...CHECKLIST_DATA.map(t => t.id)) : 0) + 1;
     CHECKLIST_DATA.push({
       id: newId,
       cat: document.getElementById('task-field-cat').value,

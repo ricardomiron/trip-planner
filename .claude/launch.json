@@ -4,7 +4,7 @@
     {
       "name": "Static File Server",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "serve", "-l", "8080", "/Users/ricardomiron/Documents/GitHub/trip-planner/.claude/worktrees/laughing-varahamihira"],
+      "runtimeArgs": ["--yes", "serve", "-l", "8080", "${workspaceFolder}"],
       "port": 8080
     }
   ]
