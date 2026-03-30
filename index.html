@@ -500,6 +500,24 @@
   .search-result-sub { font-size:11px; color:var(--text3); margin-top:2px; line-height:1.4; }
   .search-empty { text-align:center; color:var(--text3); font-size:14px; padding:60px 20px; line-height:1.8; }
 
+  /* ── TAB BADGE ── */
+  .tab-badge { position:absolute; top:-3px; right:-7px; background:var(--seoul); color:white; font-size:9px; font-weight:700; min-width:15px; height:15px; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:0 3px; line-height:1; pointer-events:none; }
+  .tab-badge:empty { display:none; }
+
+  /* ── TIMELINE SEGMENT DIVIDER ── */
+  .tl-seg-divider { display:flex; align-items:center; gap:8px; padding:10px 0 2px; }
+  .tl-seg-divider span { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; white-space:nowrap; }
+  .tl-seg-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ── SECTION PROGRESS ── */
+  .checklist-section-title { display:flex !important; justify-content:space-between; align-items:center; }
+  .sec-progress { font-size:11px; color:var(--text3); font-weight:500; letter-spacing:0; text-transform:none; }
+  .sec-progress.done { color:var(--green); }
+
+  /* ── CUSTOM CONFIRM ── */
+  .confirm-msg { font-size:15px; font-weight:500; line-height:1.4; margin:4px 0 20px; }
+  .confirm-sub { font-size:13px; color:var(--text2); margin-top:6px; font-weight:300; }
+
   /* ── OFFLINE BAR ── */
   .offline-bar { display:none; position:fixed; top:0; left:0; right:0; z-index:500; background:#1c1a18; border-bottom:1px solid rgba(255,255,255,.08); padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 8px; text-align:center; font-size:12px; color:var(--text3); font-family:inherit; }
   .offline-bar.visible { display:block; }
@@ -1010,7 +1028,7 @@
     <span class="label">Days</span>
   </button>
   <button class="tab" onclick="switchTab('checklist',this)">
-    <span class="icon">✅</span>
+    <span class="icon" style="position:relative;">✅<span class="tab-badge" id="tasks-badge"></span></span>
     <span class="label">Tasks</span>
   </button>
   <button class="tab" onclick="switchTab('map',this)">
@@ -1022,6 +1040,21 @@
     <span class="label">Search</span>
   </button>
 </nav>
+
+
+<!-- ══════════════════════════════════════════════
+     CUSTOM CONFIRM MODAL
+════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="confirm-modal" onclick="if(event.target===this)closeConfirm()">
+  <div class="modal" style="position:relative;">
+    <div class="modal-handle"></div>
+    <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="form-actions" style="margin-top:0;">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-save" id="confirm-ok-btn" style="background:var(--seoul);color:white;"></button>
+    </div>
+  </div>
+</div>
 
 
 <!-- ══════════════════════════════════════════════
@@ -1226,6 +1259,40 @@ document.querySelectorAll('.cal-day[data-date]').forEach(el => {
   });
 });
 
+// Mark today on the calendar
+(function() {
+  const t = new Date();
+  if (t.getFullYear() === 2026 && t.getMonth() === 3) {
+    const el = document.querySelector(`.cal-day[data-date="${t.getDate()}"]`);
+    if (el) el.classList.add('today');
+  }
+})();
+
+// Swipe-down to close search overlay
+(function() {
+  const overlay = document.getElementById('search-overlay');
+  let startY = 0, dragging = false;
+  overlay.addEventListener('touchstart', e => {
+    const results = document.getElementById('search-results');
+    if (results.scrollTop > 0) { dragging = false; return; }
+    startY = e.touches[0].clientY; dragging = true;
+    overlay.style.transition = 'none';
+  }, { passive: true });
+  overlay.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const dy = Math.max(0, e.touches[0].clientY - startY);
+    overlay.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+  overlay.addEventListener('touchend', e => {
+    if (!dragging) return;
+    dragging = false;
+    overlay.style.transition = '';
+    const dy = e.changedTouches[0].clientY - startY;
+    if (dy > 100) { closeSearch(); }
+    else { overlay.style.transform = ''; }
+  });
+})();
+
 function renderDayDetail(d) {
   const day = DAYS[d];
   const det = document.getElementById('day-detail');
@@ -1234,8 +1301,14 @@ function renderDayDetail(d) {
   const cityColor = { seoul: 'var(--seoul)', osaka: 'var(--osaka)', tokyo: 'var(--tokyo)' };
   const cityLabel = { seoul: '🇰🇷 Seoul', osaka: '🇯🇵 Osaka', tokyo: '🇯🇵 Tokyo' };
   
-  const tl = day.timeline.map((item, i) => `
-    <div class="tl-item">
+  const segLabel = { morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening' };
+  let lastSeg = null;
+  const tl = day.timeline.map((item, i) => {
+    const divider = item.seg !== lastSeg
+      ? `<div class="tl-seg-divider"><span>${segLabel[item.seg] || item.seg}</span></div>`
+      : '';
+    lastSeg = item.seg;
+    return `${divider}<div class="tl-item">
       <div class="tl-left">
         <div class="tl-dot ${item.dot}"></div>
         ${i < day.timeline.length - 1 ? '<div class="tl-line"></div>' : ''}
@@ -1258,7 +1331,8 @@ function renderDayDetail(d) {
         </div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
   
   const dateStr = `April ${d}, 2026`;
   const dowStr = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(2026, 3, d).getDay()];
@@ -1329,7 +1403,10 @@ function renderChecklist() {
   
   let html = '';
   Object.keys(sections).forEach(sec => {
-    html += `<div class="checklist-section"><div class="checklist-section-title">${sectionLabels[sec] || sec}</div><div class="check-items">`;
+    const secDone = sections[sec].filter(item => checkState[item.id]).length;
+    const secTotal = sections[sec].length;
+    const allDone = secDone === secTotal;
+    html += `<div class="checklist-section"><div class="checklist-section-title"><span>${sectionLabels[sec] || sec}</span><span class="sec-progress${allDone ? ' done' : ''}">${secDone}/${secTotal}</span></div><div class="check-items">`;
     sections[sec].forEach(item => {
       const done = checkState[item.id];
       const cityClass = item.city !== 'all' ? item.city : 'all';
@@ -1358,6 +1435,7 @@ function renderChecklist() {
   
   container.innerHTML = html;
   updateProgress();
+  updateTabBadge();
 }
 
 function toggleCheck(id) {
@@ -1504,11 +1582,12 @@ function saveActivity() {
   }
 
   if (item.tags.includes('book') && !findMatchingTask(item.place)) {
-    if (confirm(`Create a checklist task to book "${item.place}"?`)) {
+    showConfirm(`Create a checklist task to book "${item.place}"?`, () => {
       const newId = Math.max(...CHECKLIST_DATA.map(t => t.id)) + 1;
       CHECKLIST_DATA.push({ id: newId, cat: 'urgent', city: DAYS[editModalDay].city, title: `Book ${item.place}`, sub: '', done: false, day: editModalDay });
       checkState[newId] = false;
-    }
+      renderChecklist(); updateOverviewStats(); renderBookingCard(); saveToStorage();
+    }, 'Create Task');
   }
 
   closeEditModal();
@@ -1521,13 +1600,14 @@ function saveActivity() {
 }
 
 function deleteActivity(day, index) {
-  if (!confirm('Remove this activity?')) return;
-  DAYS[day].timeline.splice(index, 1);
-  renderDayDetail(day);
-  updateOverviewStats();
-  renderBookingCard();
-  renderPlaceGrid(currentMapCity);
-  saveToStorage();
+  showConfirm('Remove this activity?', () => {
+    DAYS[day].timeline.splice(index, 1);
+    renderDayDetail(day);
+    updateOverviewStats();
+    renderBookingCard();
+    renderPlaceGrid(currentMapCity);
+    saveToStorage();
+  }, 'Delete');
 }
 
 // ─── ACCOMMODATION ────────────────────────────────────────────────────────
@@ -1614,10 +1694,11 @@ function saveAccommodation() {
 }
 
 function deleteAccommodation(id) {
-  if (!confirm('Remove this accommodation?')) return;
-  ACCOMMODATION_DATA.splice(ACCOMMODATION_DATA.findIndex(x => x.id === id), 1);
-  renderAccommodationCard();
-  saveToStorage();
+  showConfirm('Remove this accommodation?', () => {
+    ACCOMMODATION_DATA.splice(ACCOMMODATION_DATA.findIndex(x => x.id === id), 1);
+    renderAccommodationCard();
+    saveToStorage();
+  }, 'Delete');
 }
 
 // ─── TRANSPORT ────────────────────────────────────────────────────────────
@@ -1700,10 +1781,11 @@ function saveTransport() {
 }
 
 function deleteTransport(id) {
-  if (!confirm('Remove this transport entry?')) return;
-  TRANSPORT_DATA.splice(TRANSPORT_DATA.findIndex(x => x.id === id), 1);
-  renderTransportCard();
-  saveToStorage();
+  showConfirm('Remove this transport entry?', () => {
+    TRANSPORT_DATA.splice(TRANSPORT_DATA.findIndex(x => x.id === id), 1);
+    renderTransportCard();
+    saveToStorage();
+  }, 'Delete');
 }
 
 // ─── NOTES ────────────────────────────────────────────────────────────────
@@ -1742,8 +1824,8 @@ function updateOverviewStats() {
   });
   const pe = document.getElementById('stat-places');
   const be = document.getElementById('stat-book');
-  if (pe) pe.textContent = places;
-  if (be) be.textContent = bookNow;
+  if (pe) animateCounter(pe, places);
+  if (be) animateCounter(be, bookNow);
 }
 
 function renderBookingCard() {
@@ -1847,13 +1929,14 @@ function saveTask() {
 }
 
 function deleteTask(id) {
-  if (!confirm('Remove this task?')) return;
-  CHECKLIST_DATA.splice(CHECKLIST_DATA.findIndex(t => t.id === id), 1);
-  delete checkState[id];
-  renderChecklist();
-  updateOverviewStats();
-  renderBookingCard();
-  saveToStorage();
+  showConfirm('Remove this task?', () => {
+    CHECKLIST_DATA.splice(CHECKLIST_DATA.findIndex(t => t.id === id), 1);
+    delete checkState[id];
+    renderChecklist();
+    updateOverviewStats();
+    renderBookingCard();
+    saveToStorage();
+  }, 'Delete');
 }
 
 function jumpToDay(day) {
@@ -1863,6 +1946,44 @@ function jumpToDay(day) {
     const el = document.querySelector(`.cal-day[data-date="${day}"]`);
     if (el) el.click();
   }, 50);
+}
+
+// ─── CUSTOM CONFIRM ────────────────────────────────────────────────────────
+
+function showConfirm(message, onConfirm, confirmLabel = 'Confirm') {
+  document.getElementById('confirm-msg').textContent = message;
+  const okBtn = document.getElementById('confirm-ok-btn');
+  okBtn.textContent = confirmLabel;
+  okBtn.onclick = () => { closeConfirm(); onConfirm(); };
+  document.getElementById('confirm-modal').classList.add('open');
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-modal').classList.remove('open');
+}
+
+// ─── TAB BADGE ─────────────────────────────────────────────────────────────
+
+function updateTabBadge() {
+  const badge = document.getElementById('tasks-badge');
+  if (!badge) return;
+  const urgent = CHECKLIST_DATA.filter(item => item.cat === 'urgent' && !checkState[item.id]).length;
+  badge.textContent = urgent > 9 ? '9+' : urgent > 0 ? urgent : '';
+}
+
+// ─── ANIMATED COUNTER ──────────────────────────────────────────────────────
+
+function animateCounter(el, target, duration = 500) {
+  const start = parseInt(el.textContent) || 0;
+  if (start === target) return;
+  const startTime = performance.now();
+  const tick = now => {
+    const p = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(start + (target - start) * eased);
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 // ─── REORDER ACTIVITIES ────────────────────────────────────────────────────
@@ -1956,9 +2077,10 @@ function renderBudgetCard() {
   const rows = BUDGET_DATA.map(b => {
     const act = parseFloat(b.actual) || 0;
     const pln = parseFloat(b.planned) || 0;
-    const actColor = act > pln && pln > 0 ? 'color:var(--seoul)' : act > 0 ? 'color:var(--green)' : '';
+    const overBudget = act > pln && pln > 0;
+    const actColor = overBudget ? 'color:var(--seoul)' : act > 0 ? 'color:var(--green)' : '';
     return `
-      <div class="budget-row">
+      <div class="budget-row" style="${overBudget ? 'background:rgba(232,80,58,.06);border-radius:8px;margin:0 -8px;padding:9px 8px;' : ''}">
         <div class="budget-row-icon">${b.icon || '💰'}</div>
         <div class="budget-row-info">
           <div class="budget-row-label">${b.label}</div>
@@ -2041,10 +2163,11 @@ function saveBudgetItem() {
 }
 
 function deleteBudgetItem(id) {
-  if (!confirm('Remove this budget item?')) return;
-  BUDGET_DATA.splice(BUDGET_DATA.findIndex(x => x.id === id), 1);
-  renderBudgetCard();
-  saveToStorage();
+  showConfirm('Remove this budget item?', () => {
+    BUDGET_DATA.splice(BUDGET_DATA.findIndex(x => x.id === id), 1);
+    renderBudgetCard();
+    saveToStorage();
+  }, 'Delete');
 }
 
 // ─── SEARCH ────────────────────────────────────────────────────────────────
@@ -2184,17 +2307,18 @@ function importData() {
         const notes = d.notes || d.DAY_NOTES;
         const budget = d.budget || d.BUDGET_DATA;
         if (!days && !checklist && !transport && !accommodation) { showToast('Unrecognised file format', true); return; }
-        if (!confirm('This will replace all current data. Continue?')) return;
-        if (days) { Object.keys(DAYS).forEach(k => delete DAYS[k]); Object.assign(DAYS, days); }
-        if (checklist) { CHECKLIST_DATA.length = 0; CHECKLIST_DATA.push(...checklist); Object.keys(checkState).forEach(k => delete checkState[k]); checklist.forEach(item => { checkState[item.id] = item.done || false; }); }
-        if (d.checkState) Object.assign(checkState, d.checkState);
-        if (transport) { TRANSPORT_DATA.length = 0; TRANSPORT_DATA.push(...transport); }
-        if (accommodation) { ACCOMMODATION_DATA.length = 0; ACCOMMODATION_DATA.push(...accommodation); }
-        if (notes) Object.assign(DAY_NOTES, notes);
-        if (budget) { BUDGET_DATA.length = 0; BUDGET_DATA.push(...budget); }
-        saveToStorage();
-        renderAll();
-        showToast('Data imported successfully ✓');
+        showConfirm('This will replace all current data. Continue?', () => {
+          if (days) { Object.keys(DAYS).forEach(k => delete DAYS[k]); Object.assign(DAYS, days); }
+          if (checklist) { CHECKLIST_DATA.length = 0; CHECKLIST_DATA.push(...checklist); Object.keys(checkState).forEach(k => delete checkState[k]); checklist.forEach(item => { checkState[item.id] = item.done || false; }); }
+          if (d.checkState) Object.assign(checkState, d.checkState);
+          if (transport) { TRANSPORT_DATA.length = 0; TRANSPORT_DATA.push(...transport); }
+          if (accommodation) { ACCOMMODATION_DATA.length = 0; ACCOMMODATION_DATA.push(...accommodation); }
+          if (notes) Object.assign(DAY_NOTES, notes);
+          if (budget) { BUDGET_DATA.length = 0; BUDGET_DATA.push(...budget); }
+          saveToStorage();
+          renderAll();
+          showToast('Data imported successfully ✓');
+        }, 'Replace all data');
       } catch(e) { showToast('Invalid JSON file', true); }
     };
     reader.readAsText(file);
@@ -2215,6 +2339,7 @@ function showToast(msg, isError = false) {
 // ─── INIT ──────────────────────────────────────────────────────────────────
 
 loadFromStorage();
+updateTabBadge();
 document.getElementById('map-frame').src = MAP_URLS.all;
 renderCountdown();
 renderChecklist();
